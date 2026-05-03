@@ -1588,8 +1588,16 @@
                     const isChecked = this.state.selectedKeys.has(item.keyword) ? 'checked' : '';
                     const urlCount = item.urls ? item.urls.length : 0;
                     const urlsHtml = urlCount > 0 ? `<span class="font-mono" style="font-size:11px;">${urlCount}</span>` : '<span style="color:var(--text-muted)">—</span>';
+                    
                     let actionHtml = item.isScraped ? `<button class="btn btn-ghost" style="padding:3px 6px;font-size:11px;" onclick="app.showUrls('${item.keyword.replace(/'/g, "\\'")}')" title="Xem URLs"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>` : '';
-                    if (isMain && item.isScraped) actionHtml += `<button class="btn btn-ghost" style="padding:3px 6px;font-size:11px;color:var(--accent-purple);" onclick="app.generateOutline('${item.keyword.replace(/'/g, "\\'")}')" title="Tạo Outline AI"><i class="fa-solid fa-wand-magic-sparkles"></i></button>`;
+                    
+                    if (isMain && item.isScraped) {
+                        const isGen = item.outlineStatus === 'generating';
+                        const clr = isGen ? '#f59e0b' : (item.outlineCache ? '#10b981' : 'var(--accent-purple)');
+                        const icn = isGen ? '<i class="fa-solid fa-circle-notch fa-spin"></i>' : (item.outlineCache ? '<i class="fa-solid fa-circle-check"></i>' : '<i class="fa-solid fa-wand-magic-sparkles"></i>');
+                        actionHtml += `<button class="btn btn-ghost" style="padding:3px 6px;font-size:11px;color:${clr};" onclick="app.generateOutline('${item.keyword.replace(/'/g, "\\'")}')" title="${isGen ? 'Đang tạo ngầm...' : (item.outlineCache ? 'Xem Outline' : 'Tạo Outline AI')}">${icn}</button>`;
+                    }
+                    
                     const bw = volBarW(item.volume);
 
                     return `<tr class="cluster-child ${isMain ? 'is-main' : ''}" data-group="${groupKey}">
@@ -1640,10 +1648,23 @@
 
                         const mainItem = allItems.find(i => i.keyword === mainKw) || allItems[0];
                         const hasOutline = !!mainItem.outlineCache;
-                        const outlineIcon = hasOutline ? '<i class="fa-solid fa-check"></i> Đã tạo' : '<i class="fa-solid fa-wand-magic-sparkles"></i> Outline';
-                        const outlineBtnStyle = hasOutline 
-                            ? "padding:4px 8px;font-size:10px; border-radius: 6px; background: rgba(16, 185, 129, 0.15); color: #10b981; font-weight: 600;" 
-                            : "padding:4px 8px;font-size:10px; border-radius: 6px; color:var(--accent-purple); border: 1px solid rgba(139, 92, 246, 0.3); font-weight: 600;";
+                        const isGenerating = mainItem.outlineStatus === 'generating';
+                        const isError = mainItem.outlineStatus === 'error';
+                        let outlineIcon, outlineBtnStyle;
+                        if(isGenerating) {
+                            outlineIcon = '<i class="fa-solid fa-circle-notch fa-spin"></i> Đang tạo...';
+                            outlineBtnStyle = 'padding:4px 8px;font-size:10px;border-radius:6px;color:#f59e0b;border:1px solid rgba(245,158,11,0.3);font-weight:600;';
+                        } else if(isError) {
+                            outlineIcon = '<i class="fa-solid fa-triangle-exclamation"></i> Lỗi';
+                            outlineBtnStyle = 'padding:4px 8px;font-size:10px;border-radius:6px;color:#ef4444;border:1px solid rgba(239,68,68,0.3);font-weight:600;';
+                        } else if(hasOutline) {
+                            outlineIcon = '<i class="fa-solid fa-circle-check"></i> Xem Outline';
+                            outlineBtnStyle = 'padding:4px 8px;font-size:10px;border-radius:6px;background:rgba(16,185,129,0.15);color:#10b981;font-weight:600;';
+                        } else {
+                            outlineIcon = '<i class="fa-solid fa-wand-magic-sparkles"></i> Tạo Outline';
+                            outlineBtnStyle = 'padding:4px 8px;font-size:10px;border-radius:6px;color:var(--accent-purple);border:1px solid rgba(139,92,246,0.3);font-weight:600;';
+                        }
+                        const outlineTitle = isGenerating ? 'Đang chạy ngầm... Nhấn để xem tiến trình' : (hasOutline ? 'Nhấn để xem Outline' : 'Tạo Outline AI');
 
                         parts.push(`<tr class="cluster-parent ${sizeClass}" data-group="${mainKw}">
                             <td class="col-cb"><input type="checkbox" class="row-cb" data-key="${mainKw}" ${this.state.selectedKeys.has(mainKw) ? 'checked' : ''}></td>
@@ -1652,7 +1673,7 @@
                             <td style="text-align:center;">${groupIntentHtml}</td>
                             <td></td>
                             <td></td>
-                            <td style="text-align:right;"><button class="btn btn-ghost" style="${outlineBtnStyle}" onclick="app.generateOutline('${mainKw.replace(/'/g, "\\'")}')" title="${hasOutline ? 'Đã có Outline. Nhấn để xem lại' : 'Tạo Outline AI'}">${outlineIcon}</button></td>
+                            <td style="text-align:right;"><button class="btn btn-ghost" style="${outlineBtnStyle}" onclick="app.generateOutline('${mainKw.replace(/'/g, "\\'")}')" title="${outlineTitle}">${outlineIcon}</button></td>
                         </tr>`);
 
                         if(isExpanded) {
@@ -2070,35 +2091,56 @@
                 document.getElementById('modalOutlineManager').classList.add('active');
             },
 
-            async generateOutline(keyword, force = false) {
+            // Mở modal để xem outline đã có (chỉ display)
+            openOutlineModal(keyword) {
                 const item = this.data.find(d => d.keyword === keyword);
-                if(!item || !item.urls || item.urls.length === 0) { this.showToast('Chưa có dữ liệu SERP cho từ khóa này!', 'triangle-exclamation'); return; }
-                
-                document.getElementById('modalAITitle').innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> Tạo Outline: ${keyword}`;
+                if(!item) return;
+                document.getElementById('modalAITitle').innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> Outline: ${keyword}`;
                 document.getElementById('modalAIStatus').innerText = this.els.geminiModel.value;
                 const btnForce = document.getElementById('btnForceAI');
                 btnForce.style.display = 'inline-flex';
                 btnForce.onclick = () => this.generateOutline(keyword, true);
-                
-                if(item.outlineCache && !force) {
-                    const headingsHtml = item.headingsCache ? `
-                        <div style="flex: 0 0 360px; border-left: 1px solid var(--border-light); display: flex; flex-direction: column; height: 100%;">
-                            <h4 style="margin:0; font-size:13px; font-weight: 600; color:var(--text-main); display:flex; align-items:center; gap:8px; padding: 16px 20px; border-bottom: 1px solid var(--border-light); flex-shrink: 0;"><i class="fa-solid fa-spider" style="color:var(--brand-primary);"></i> Heading Đối thủ (Tham khảo)</h4>
-                            <pre style="flex:1; font-family: 'JetBrains Mono', monospace; font-size:11px; line-height:1.7; color:var(--text-secondary); padding:16px 20px; overflow-y:auto; margin:0; white-space: pre-wrap;">${item.headingsCache.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
-                        </div>` : '';
-
-                    document.getElementById('modalAIBody').innerHTML = `
-                        <div style="display: flex; height: 100%;">
-                            <div id="aiEditableContent" contenteditable="true" style="flex: 1; overflow-y: auto; padding: 24px 32px; outline: none; cursor: text;" class="prose">
-                                ${marked.parse(item.outlineCache)}
-                            </div>
-                            ${headingsHtml}
+                const headingsHtml = item.headingsCache ? `
+                    <div style="flex: 0 0 360px; border-left: 1px solid var(--border-light); display: flex; flex-direction: column; height: 100%;">
+                        <h4 style="margin:0; font-size:13px; font-weight: 600; color:var(--text-main); display:flex; align-items:center; gap:8px; padding: 16px 20px; border-bottom: 1px solid var(--border-light); flex-shrink: 0;"><i class="fa-solid fa-spider" style="color:var(--brand-primary);"></i> Heading Đối thủ</h4>
+                        <pre style="flex:1; font-family: 'JetBrains Mono', monospace; font-size:11px; line-height:1.7; color:var(--text-secondary); padding:16px 20px; overflow-y:auto; margin:0; white-space: pre-wrap;">${item.headingsCache.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
+                    </div>` : '';
+                document.getElementById('modalAIBody').innerHTML = `
+                    <div style="display: flex; height: 100%;">
+                        <div id="aiEditableContent" contenteditable="true" style="flex: 1; overflow-y: auto; padding: 24px 32px; outline: none; cursor: text;" class="prose">
+                            ${item.outlineCache ? marked.parse(item.outlineCache) : '<p style="color:var(--text-muted);text-align:center;padding:40px">Chưa có outline</p>'}
                         </div>
-                    `;
-                    document.getElementById('modalAI').classList.add('active');
+                        ${headingsHtml}
+                    </div>`;
+                document.getElementById('modalAI').classList.add('active');
+            },
+
+            async generateOutline(keyword, force = false) {
+                const item = this.data.find(d => d.keyword === keyword);
+                if(!item || !item.urls || item.urls.length === 0) { this.showToast('Chưa có dữ liệu SERP cho từ khóa này!', 'triangle-exclamation'); return; }
+
+                // Nếu đang generating → mở modal xem tiến trình
+                if(item.outlineStatus === 'generating') {
+                    this.openOutlineModal(keyword);
                     return;
                 }
 
+                // Nếu đã có cache và không force → mở modal xem
+                if(item.outlineCache && !force) {
+                    this.openOutlineModal(keyword);
+                    return;
+                }
+
+                // === BẮT ĐẦU TẠO NGẦM ===
+                item.outlineStatus = 'generating';
+                item.outlineCache = null;
+                this.renderTable(); // Cập nhật badge ngay
+
+                // Mở modal để user có thể theo dõi
+                document.getElementById('modalAITitle').innerHTML = `<i class="fa-solid fa-circle-notch fa-spin" style="color:#f59e0b"></i> Đang tạo Outline: <span style="color:var(--accent-purple)">${keyword}</span>`;
+                document.getElementById('modalAIStatus').innerText = this.els.geminiModel.value;
+                const btnForce = document.getElementById('btnForceAI');
+                btnForce.style.display = 'none';
                 const aiBody = document.getElementById('modalAIBody');
                 aiBody.innerHTML = '<div class="ai-skeleton"><div class="ai-skeleton-line"></div><div class="ai-skeleton-line"></div><div class="ai-skeleton-line"></div><div class="ai-skeleton-line"></div><div class="ai-skeleton-line"></div></div><p id="scrapeProgressText" style="text-align:center;color:var(--text-muted);font-size:12px;margin-top:16px;">Đang quét Heading từ đối thủ...</p>';
                 document.getElementById('modalAI').classList.add('active');
@@ -2252,18 +2294,35 @@ QUY TẮC TUYỆT ĐỐI:
 
 
 
+                // Auto-refresh bảng mỗi 3s khi đang generating để badge spinner luôn hiển thị
+                const refreshInterval = setInterval(() => {
+                    if(item.outlineStatus !== 'generating') clearInterval(refreshInterval);
+                    else this.renderTable();
+                }, 3000);
+
                 try { 
                     const md = await this.callGeminiStreaming(prompt, streamTarget);
-                    // Sau khi stream xong, chuyển container sang editable
+                    clearInterval(refreshInterval);
+                    // Sau khi stream xong
+                    item.outlineCache = md;
+                    item.outlineStatus = 'done';
+                    this.saveState();
+                    this.renderTable(); // Cập nhật badge → "✓ Xem Outline"
+                    // Cập nhật modal title
+                    document.getElementById('modalAITitle').innerHTML = `<i class="fa-solid fa-circle-check" style="color:#10b981"></i> Outline xong: <span style="color:var(--accent-purple)">${keyword}</span>`;
+                    document.getElementById('btnForceAI').style.display = 'inline-flex';
+                    document.getElementById('btnForceAI').onclick = () => this.generateOutline(keyword, true);
+                    // Chuyển container sang editable
                     streamTarget.setAttribute('contenteditable', 'true');
                     streamTarget.id = 'aiEditableContent';
                     streamTarget.style.cursor = 'text';
                     streamTarget.style.outline = 'none'; 
-                    item.outlineCache = md;
-                    this.saveState();
-                    this.renderTable();
+                    this.showToast(`✓ Outline "${keyword}" đã xong!`, 'circle-check');
                 } 
-                catch(e) { 
+                catch(e) {
+                    clearInterval(refreshInterval);
+                    item.outlineStatus = 'error';
+                    this.renderTable(); // Cập nhật badge → lỗi
                     // Show error + crawled headings as fallback
                     aiBody.innerHTML = `
                         <div style="padding: 24px;">
