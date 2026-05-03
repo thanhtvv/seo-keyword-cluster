@@ -1993,14 +1993,15 @@
                             return `${idx+1}. "${obj.title || ''}" \u2014 ${obj.snippet || ''}`;
                         }).join('\n');
 
-                        const prompt = `BẠN LÀ CHUYÊN GIA SEO ON-PAGE. CHỈ TRẢ VỀ KẾT QUẢ ĐÚNG FORMAT MARKDOWN TIẾNG VIỆT. KHÔNG CHÀO HỎI.\n\nTừ khóa: "${kw}" (Vol: ${item.volume}).${clusterContext}\nTop SERP:\n${serpContext}\nHeading đối thủ:\n${headingsData}\n\nYêu cầu: Phân tích Search Intent, đề xuất H1 tự nhiên, lập dàn ý H2/H3 CHỌN LỌC (5-8 H2, KHÔNG gom hết đối thủ, chỉ lấy góc nhìn cần thiết), 3-5 FAQ. Outline phải TỐT HƠN đối thủ, súc tích, đúng intent.`;
+                        const prompt = `B\u1ea1n l\u00e0 chuy\u00ean gia SEO On-Page. CH\u1ec8 tr\u1ea3 v\u1ec1 Markdown. KH\u00d4NG ch\u00e0o h\u1ecfi, KH\u00d4NG gi\u1ea3i th\u00edch.\n\nT\u1eeb kh\u00f3a: \"${kw}\" (Vol: ${item.volume})${clusterContext}\n\nTop SERP:\n${serpContext}\n\nHeading \u0111\u1ed1i th\u1ee7 (tham kh\u1ea3o):\n${headingsData}\n\nY\u00eau c\u1ea7u:\n1. D\u00f2ng \u0111\u1ea7u: **\ud83c\udfaf Search Intent:** [lo\u1ea1i] \u2014 [m\u00f4 t\u1ea3 ng\u1eafn]\n2. D\u00f2ng hai: **\ud83d\udcdd Content Format:** [lo\u1ea1i]\n3. H1 t\u1ef1 nhi\u00ean ch\u1ee9a keyword ch\u00ednh\n4. T\u1ed0I THI\u1ec2U 6 m\u1ee5c H2, T\u1ed0I \u0110A 8 m\u1ee5c H2 (m\u1ed7i H2 c\u00f3 1-3 H3 cho ph\u1ea7n quan tr\u1eafng, c\u00f3 th\u1ec3 kh\u00f4ng c\u00f3 H3 n\u1ebfu \u0111\u01a1n gi\u1ea3n)\n5. M\u1ee5c FAQ cu\u1ed1i g\u1ed3m 3-5 c\u00e2u h\u1ecfi d\u1ea1ng H3 + tr\u1ea3 l\u1eddi ng\u1eafn 1-2 c\u00e2u\n\nQUY T\u1eaeC B\u1eaeT BU\u1ed8C:\n- H2 d\u00f9ng ## (hai d\u1ea5u #), H3 d\u00f9ng ### (ba d\u1ea5u #)\n- KH\u00d4NG th\u00eam ch\u00fa th\u00edch (H2) hay (H3) sau heading \u2014 ch\u1ec9 d\u00f9ng markdown thu\u1ea7n\n- KH\u00d4NG copy nguy\u00ean heading \u0111\u1ed1i th\u1ee7, ch\u1ec9 l\u1ea5y \u00fd v\u00e0 vi\u1ebft l\u1ea1i\n- M\u1ed7i H2 ph\u1ea3i ro r\u00e0ng, kh\u00f4ng ch\u1eadp, \u0111\u00fang intent`;
+
 
                         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${this.els.geminiModel.value}:generateContent?key=${geminiKey}`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
                                 contents: [{ parts: [{ text: prompt }] }],
-                                generationConfig: { maxOutputTokens: 4096 }
+                                generationConfig: { maxOutputTokens: 8192 }
                             })
                         });
 
@@ -2204,14 +2205,15 @@ Yêu cầu:
 1. Dòng đầu: **🎯 Search Intent:** [loại] — [mô tả ngắn]
 2. Dòng hai: **📝 Content Format:** [loại]
 3. H1 tự nhiên chứa keyword
-4. 5-8 mục H2 chọn lọc (mỗi H2 có 0-3 H3 nếu cần thiết)
+4. TỐI THIỂU 6 mục H2, TỐI ĐA 8 mục H2 (mỗi H2 có 1-3 H3 cho phần quan trắng, có thể không có H3 nếu đơn giản)
 5. Mục FAQ cuối gồm 3-5 câu hỏi dạng H3 + trả lời ngắn 1-2 câu
 
 QUY TẮC BẮT BUỘC:
 - H2 dùng ## (hai dấu #), H3 dùng ### (ba dấu #)
 - KHÔNG thêm chú thích (H2) hay (H3) vào sau heading — chỉ dùng markdown thuần
-- KHÔNG copy nguyên heading đối thủ, chỉ lấy ý
-- Outline phải súc tích, đúng intent, không lan man`;
+- KHÔNG copy nguyên heading đối thủ, chỉ lấy ý và viết lại
+- Mỗi H2 phải được viết ro ràng, không chập nhau, đúng intent
+- Outline phải súc tích và THỰC SỰ TỐT HƠN nội dung đối thủ`;
 
                 try { 
                     const md = await this.callGeminiStreaming(prompt, streamTarget);
