@@ -1,0 +1,11 @@
+# Agent skills (internal only)
+.agents/
+
+# System files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+*.log

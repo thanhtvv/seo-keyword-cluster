@@ -1,0 +1,2433 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEO Keyword Clustering Pro</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <style>
+        /* Design System - Apple Liquid Glass */
+        :root[data-theme="light"] {
+            --bg-page: radial-gradient(circle at top left, #e0e7ff 0%, #f8f9fb 40%, #f3e8ff 100%);
+            --glass-bg: rgba(255, 255, 255, 0.75);
+            --glass-header: rgba(255, 255, 255, 0.85);
+            --bg-surface: #ffffff; --bg-hover: rgba(255,255,255,0.5); --bg-muted: rgba(0,0,0,0.03);
+            --text-main: #1d1d1f; --text-secondary: #86868b; --text-muted: #9ca3af;
+            --border-light: rgba(0,0,0,0.06); --border-hover: rgba(0,0,0,0.1); --border-focus: #0066cc;
+            --glass-border: rgba(255, 255, 255, 0.5);
+            --brand-primary: #0066cc; --brand-primary-hover: #005bb5; --brand-primary-text: #ffffff;
+            --accent-green: #34c759; --accent-blue: #007aff; --accent-purple: #af52de;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.04); --shadow-md: 0 8px 24px rgba(0,0,0,0.08); --shadow-modal: 0 20px 60px rgba(0,0,0,0.15);
+            --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px;
+        }
+        :root[data-theme="dark"] {
+            --bg-page: radial-gradient(circle at top left, #1e1b4b 0%, #0b0d11 40%, #312e81 100%);
+            --glass-bg: rgba(20, 24, 32, 0.65);
+            --glass-header: rgba(20, 24, 32, 0.75);
+            --bg-surface: #1c1c1e; --bg-hover: rgba(255,255,255,0.06); --bg-muted: rgba(0,0,0,0.2);
+            --text-main: #f5f5f7; --text-secondary: #86868b; --text-muted: #6b7280;
+            --border-light: rgba(255,255,255,0.08); --border-hover: rgba(255,255,255,0.15); --border-focus: #0a84ff;
+            --glass-border: rgba(255,255,255,0.05);
+            --brand-primary: #0a84ff; --brand-primary-hover: #409cff; --brand-primary-text: #ffffff;
+            --accent-green: #30d158; --accent-blue: #0a84ff; --accent-purple: #bf5af2;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.2); --shadow-md: 0 8px 24px rgba(0,0,0,0.4); --shadow-modal: 0 20px 60px rgba(0,0,0,0.6);
+            --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg-page); color: var(--text-main); font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif; font-size: 13px; line-height: 1.5; height: 100vh; display: flex; padding: 24px; overflow: hidden; transition: background 0.4s ease, color 0.4s ease; }
+        h1, h2, h3, h4 { font-weight: 600; color: var(--text-main); letter-spacing: -0.02em; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: 6px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
+
+        .hidden { display: none !important; }
+        .flex { display: flex; } .flex-col { display: flex; flex-direction: column; } .items-center { align-items: center; } .justify-between { justify-content: space-between; } .gap-2 { gap: 8px; } .gap-4 { gap: 16px; }
+
+        /* Layout - Sidebar Dashboard */
+        .app-container { display: flex; flex: 1; background: var(--glass-bg); backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); border-radius: 24px; border: 1px solid var(--glass-border); box-shadow: var(--shadow-modal); overflow: hidden; }
+        .sidebar { width: 250px; background: transparent; display: flex; flex-direction: column; align-items: stretch; padding: 24px 16px; gap: 4px; z-index: 20; border-right: 1px solid var(--border-light); flex-shrink: 0; }
+        .sidebar-logo { display: flex; align-items: center; gap: 12px; color: var(--text-main); padding: 0 8px 24px 8px; margin-bottom: 12px; border-bottom: 1px solid var(--border-light); }
+        .sidebar-logo i { font-size: 24px; background: linear-gradient(135deg, var(--brand-primary), var(--accent-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .sidebar-logo span { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+        .sidebar-heading { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin: 8px 0 4px 12px; }
+        .sidebar-item { display: flex; align-items: center; justify-content: flex-start; gap: 14px; color: var(--text-secondary); border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: 600; padding: 12px 16px; transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); border: 1px solid transparent; }
+        .sidebar-item i { font-size: 16px; width: 20px; text-align: center; transition: color 0.2s; }
+        .sidebar-item:hover { color: var(--text-main); background: var(--bg-hover); transform: translateX(2px); }
+        .sidebar-item.active { color: var(--brand-primary); background: var(--bg-surface); border-color: var(--border-light); box-shadow: var(--shadow-sm); }
+        .sidebar-item-danger { margin-top: auto; }
+        .sidebar-item-danger:hover { color: #ff3b30; background: rgba(255, 59, 48, 0.1); }
+        
+        .right-wrapper { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: transparent; }
+        .header { height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex-shrink: 0; border-bottom: 1px solid var(--border-light); background: transparent; }
+        .main-content { flex: 1; overflow: hidden; display: flex; flex-direction: column; position: relative; background: var(--bg-surface); margin: 20px; border-radius: 16px; border: 1px solid var(--border-light); box-shadow: var(--shadow-sm); }
+        .sub-toolbar { padding: 12px 20px; border-bottom: 1px solid var(--border-light); display: flex; align-items: center; justify-content: space-between; background: var(--glass-bg); flex-shrink: 0; gap: 12px; }
+
+        /* Filter Grouping */
+        .filter-group { display: flex; align-items: center; background: var(--bg-surface); border-radius: var(--radius-md); padding: 6px; gap: 6px; border: 1px solid var(--border-light); box-shadow: 0 2px 8px rgba(0,0,0,0.04); flex-wrap: wrap; }
+        .filter-input-wrap { position: relative; display: flex; align-items: center; }
+        .filter-input-wrap i { position: absolute; left: 10px; color: var(--text-muted); font-size: 12px; pointer-events: none; }
+        .filter-input-wrap .input-clean { background: var(--bg-hover); border: 1px solid transparent; border-radius: var(--radius-sm); padding: 6px 10px 6px 28px; font-size: 13px; color: var(--text-main); outline: none; width: 100%; transition: all 0.2s ease; font-family: inherit; }
+        .filter-input-wrap .input-clean:hover { background: var(--bg-surface); border-color: var(--border-hover); }
+        .filter-input-wrap .input-clean:focus { background: var(--bg-surface); border-color: var(--brand-primary); box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.15); }
+        .filter-divider { display: none; }
+
+        /* Buttons */
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 16px; border-radius: var(--radius-md); font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); border: 1px solid transparent; background: transparent; color: var(--text-main); font-family: inherit; white-space: nowrap; box-shadow: var(--shadow-sm); }
+        .btn:active { transform: scale(0.96); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+        .btn-ghost { box-shadow: none; }
+        .btn-ghost:hover { background: var(--bg-hover); }
+        .btn-outline { border-color: var(--border-light); background: var(--glass-bg); backdrop-filter: blur(8px); }
+        .btn-outline:hover:not(:disabled) { border-color: var(--border-hover); background: var(--bg-surface); }
+        .btn-primary { background: var(--brand-primary); color: var(--brand-primary-text); border-color: var(--brand-primary); box-shadow: 0 2px 6px rgba(0,102,204,0.3); }
+        .btn-primary:hover:not(:disabled) { background: var(--brand-primary-hover); border-color: var(--brand-primary-hover); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,102,204,0.4); }
+        .btn-danger { color: #ff3b30; } .btn-danger:hover { background: rgba(255, 59, 48, 0.1); }
+
+        /* Inputs */
+        .input-base { width: 100%; padding: 8px 12px; border-radius: var(--radius-md); font-size: 13px; background: var(--glass-bg); border: 1px solid var(--border-light); color: var(--text-main); font-family: inherit; transition: all 0.2s ease; outline: none; box-shadow: inset 0 1px 2px rgba(0,0,0,0.02); }
+        .input-base:hover { border-color: var(--border-hover); }
+        .input-base:focus { border-color: var(--brand-primary); background: var(--bg-surface); box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.15); }
+        .label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 6px; letter-spacing: 0.05em; }
+
+        /* Stats */
+        .stat-item { display: flex; flex-direction: column; align-items: flex-start; padding: 0 14px; border-left: 1px solid var(--border-light); }
+        .stat-item:first-child { border-left: none; }
+        .stat-label { font-size: 10px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
+        .stat-val { font-size: 15px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+
+        /* Table */
+        .table-container { flex: 1; overflow-y: auto; overflow-x: auto; padding-bottom: 120px; }
+        .data-table { min-width: 700px; }
+        .data-table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; table-layout: fixed; }
+        .data-table th { position: sticky; top: 0; background: var(--glass-header); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); padding: 12px 16px; font-size: 11px; font-weight: 600; color: var(--text-muted); border-bottom: 1px solid var(--glass-border); z-index: 5; cursor: pointer; white-space: nowrap; text-transform: uppercase; letter-spacing: 0.05em; }
+        .data-table th:hover { color: var(--text-main); background: var(--bg-hover); }
+        .data-table td { padding: 4px 16px; border-bottom: 1px solid var(--border-light); font-size: 13.5px; height: 48px; vertical-align: middle; transition: background 0.2s; }
+        .col-cb { width: 44px !important; min-width: 44px; max-width: 44px; text-align: center; padding: 0 !important; }
+
+        /* Group parent row */
+        .cluster-parent { cursor: default; }
+        .cluster-parent td { background: var(--glass-bg); font-weight: 600; color: var(--text-main); }
+        .cluster-parent td:first-child { border-left: 4px solid var(--brand-primary); }
+        .cluster-parent:hover td { background: var(--bg-surface); }
+        .cluster-parent .kw-toggle { cursor: pointer; user-select: none; display: inline-flex; align-items: center; gap: 7px; }
+        .cluster-parent .kw-toggle:hover .kw-text { color: var(--brand-primary); }
+        .cluster-parent .kw-text { font-weight: 600; font-size: 13px; transition: color 0.15s; }
+        .cluster-parent .kw-count { font-size: 10px; color: var(--text-muted); font-weight: 500; background: var(--bg-muted); padding: 2px 8px; border-radius: 10px; margin-left: 2px; letter-spacing: 0.02em; }
+        .cluster-parent .kw-chevron { font-size: 9px; color: var(--text-muted); transition: transform 0.2s ease; width: 12px; flex-shrink: 0; }
+        .cluster-parent .kw-chevron.expanded { transform: rotate(90deg); }
+        .cluster-parent .kw-vol-total { font-weight: 700; }
+
+        /* Child rows — inside expanded group */
+        .cluster-child td { color: var(--text-secondary); font-size: 12.5px; height: 40px; }
+        .cluster-child td:first-child { border-left: 3px solid var(--brand-primary); opacity: 0.4; }
+        .cluster-child:hover td { background: var(--bg-hover); }
+        .cluster-child .child-kw { padding-left: 24px; position: relative; }
+        .cluster-child .child-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--border-hover); display: inline-block; margin-right: 8px; flex-shrink: 0; vertical-align: middle; }
+        .cluster-child.is-main .child-dot { background: var(--brand-primary); width: 5px; height: 5px; }
+        .cluster-child.is-main td { color: var(--text-main); font-weight: 500; }
+
+        /* Unclustered row — standalone keyword */
+        .unclustered-row td { color: var(--text-secondary); }
+        .unclustered-row:hover td { background: var(--bg-hover); }
+        .unclustered-row td:first-child { border-left: 3px solid transparent; }
+
+        /* Intent badges */
+        .intent-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 500; }
+        .intent-trans { background: rgba(5, 150, 105, 0.1); color: var(--accent-green); }
+        .intent-info { background: rgba(37, 99, 235, 0.1); color: var(--accent-blue); }
+
+        /* Checkbox styling */
+        .row-cb, #cbSelectAll { width: 15px; height: 15px; cursor: pointer; accent-color: var(--brand-primary); }
+
+        /* FAB */
+        .floating-action-bar { position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(20px) scale(0.95); background: var(--glass-header); backdrop-filter: blur(24px) saturate(200%); -webkit-backdrop-filter: blur(24px) saturate(200%); border: 1px solid var(--glass-border); color: var(--text-main); padding: 12px 24px; border-radius: 40px; display: flex; align-items: center; gap: 16px; box-shadow: var(--shadow-modal); z-index: 20; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); opacity: 0; pointer-events: none; }
+        .floating-action-bar.active { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(0) scale(1); }
+        .fab-btn { background: var(--bg-surface); color: var(--text-main); border: 1px solid var(--border-light); padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s ease; font-family: inherit; box-shadow: var(--shadow-sm); }
+        .fab-btn:hover { background: var(--bg-hover); border-color: var(--border-hover); transform: translateY(-1px); }
+
+        /* Pagination Footer */
+        .pagination { padding: 12px 24px; border-top: 1px solid var(--border-light); background: var(--glass-header); backdrop-filter: blur(16px); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+
+        /* Modals */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.3); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 50; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: all 0.3s ease; }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal-content { background: var(--glass-bg); backdrop-filter: blur(40px) saturate(200%); -webkit-backdrop-filter: blur(40px) saturate(200%); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-modal); width: 520px; max-height: 85vh; display: flex; flex-direction: column; transform: scale(0.95) translateY(10px); transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); overflow: hidden; }
+        .modal-lg { width: 800px; }
+        .modal-overlay.active .modal-content { transform: scale(1) translateY(0); }
+        .modal-header { padding: 16px 24px; border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; }
+        .modal-body { padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+        .modal-footer { padding: 14px 24px; border-top: 1px solid var(--border-light); display: flex; justify-content: flex-end; gap: 8px; }
+        .close-btn { background: transparent; border: none; font-size: 20px; color: var(--text-muted); cursor: pointer; transition: color 0.15s; } .close-btn:hover { color: var(--text-main); }
+        .dropzone { border: 1px dashed var(--border-hover); border-radius: 10px; padding: 32px; text-align: center; cursor: pointer; transition: all 0.2s ease; background: var(--bg-page); } .dropzone:hover { border-color: var(--brand-primary); background: var(--bg-hover); }
+
+        #modalAIBody table { width: 100%; border-collapse: collapse; margin-top: 16px; margin-bottom: 16px; font-size: 13px; }
+        #modalAIBody th, #modalAIBody td { border: 1px solid var(--border-light); padding: 8px 12px; text-align: left; }
+        #modalAIBody th { background: var(--bg-muted); font-weight: 600; color: var(--text-main); }
+        #modalAIBody tr:nth-child(even) { background: var(--bg-hover); }
+
+        /* Volume bar */
+        .vol-bar { display: inline-flex; align-items: center; gap: 8px; }
+        .vol-fill { height: 3px; border-radius: 2px; background: var(--brand-primary); opacity: 0.35; min-width: 4px; max-width: 60px; }
+
+        /* Empty state */
+        .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 24px; color: var(--text-muted); gap: 12px; }
+        .empty-state i { font-size: 40px; opacity: 0.3; }
+        .empty-state p { font-size: 14px; }
+        .empty-state .hint { font-size: 12px; color: var(--text-muted); opacity: 0.7; }
+
+        /* Progress bar */
+        .progress-wrap { display: flex; align-items: center; gap: 10px; }
+        .progress-bar { width: 140px; height: 6px; background: var(--bg-muted); border-radius: 4px; overflow: hidden; position: relative; }
+        .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--brand-primary), var(--accent-blue)); border-radius: 4px; transition: width 0.3s ease; background-size: 20px 20px; }
+        .progress-bar-fill.striped { animation: progress-stripe 0.6s linear infinite; background-image: linear-gradient(45deg, rgba(255,255,255,0.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.15) 75%, transparent 75%, transparent); }
+        @keyframes progress-stripe { from { background-position: 20px 0; } to { background-position: 0 0; } }
+
+        /* Running button pulse */
+        .btn-primary.running { animation: pulse-btn 1.5s infinite; }
+        @keyframes pulse-btn { 0%,100%{ box-shadow: 0 0 0 0 rgba(79,70,229,0.3); } 50%{ box-shadow: 0 0 0 6px rgba(79,70,229,0); } }
+
+        /* Range slider */
+        input[type=range] { -webkit-appearance: none; height: 4px; background: var(--bg-muted); border-radius: 3px; outline: none; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--brand-primary); cursor: pointer; border: 2px solid var(--bg-surface); box-shadow: var(--shadow-sm); }
+
+        /* Config modal separator */
+        .config-separator { width: 1px; background: var(--border-light); margin: 0 20px; align-self: stretch; }
+
+        /* Toast notification */
+        .toast { position: fixed; bottom: 24px; right: 24px; background: var(--bg-surface); border: 1px solid var(--border-light); color: var(--text-main); padding: 12px 20px; border-radius: 10px; box-shadow: var(--shadow-modal); z-index: 100; font-size: 13px; display: flex; align-items: center; gap: 8px; transform: translateY(20px); opacity: 0; transition: all 0.25s ease; pointer-events: none; }
+        .toast.show { transform: translateY(0); opacity: 1; pointer-events: auto; }
+
+        /* Cluster Size Color Coding */
+        .cluster-parent.cluster-xl td:first-child { border-left: 4px solid #059669 !important; }
+        .cluster-parent.cluster-md td:first-child { border-left: 4px solid var(--accent-blue) !important; }
+        .cluster-parent.cluster-sm td:first-child { border-left: 4px solid var(--border-hover) !important; }
+        .cluster-parent .cluster-size-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; flex-shrink: 0; }
+
+        /* Search Highlight */
+        mark.kw-highlight { background: rgba(251, 191, 36, 0.35); border-radius: 2px; padding: 0 1px; color: inherit; }
+
+        /* Active Filters Bar */
+        .active-filters-bar { padding: 6px 20px; background: rgba(251, 191, 36, 0.06); border-bottom: 1px solid var(--border-light); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 11px; flex-shrink: 0; }
+        .filter-chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; background: var(--bg-surface); border: 1px solid var(--border-light); font-size: 11px; font-weight: 500; color: var(--text-secondary); }
+        .filter-chip .chip-remove { cursor: pointer; color: var(--text-muted); font-size: 10px; margin-left: 2px; }
+        .filter-chip .chip-remove:hover { color: #ef4444; }
+
+        /* Focus States */
+        .btn:focus-visible, .sidebar-item:focus-visible, .fab-btn:focus-visible { outline: 2px solid var(--brand-primary); outline-offset: 2px; }
+        .input-base:focus-visible, .input-clean:focus-visible { outline: 2px solid var(--brand-primary); outline-offset: -1px; }
+
+        /* AI Skeleton Loading */
+        .ai-skeleton { padding: 24px 0; }
+        .ai-skeleton-line { height: 14px; background: linear-gradient(90deg, var(--bg-muted) 25%, var(--bg-hover) 50%, var(--bg-muted) 75%); background-size: 200% 100%; animation: skeleton-shimmer 1.5s infinite; border-radius: 4px; margin-bottom: 12px; }
+        .ai-skeleton-line:nth-child(1) { width: 60%; height: 20px; }
+        .ai-skeleton-line:nth-child(2) { width: 90%; }
+        .ai-skeleton-line:nth-child(3) { width: 75%; }
+        .ai-skeleton-line:nth-child(4) { width: 85%; }
+        .ai-skeleton-line:nth-child(5) { width: 40%; }
+        @keyframes skeleton-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+        /* Row striping */
+        .data-table tbody tr:nth-child(even):not(.cluster-parent) td { background: var(--bg-muted); }
+
+        /* Responsive — collapse sidebar on small screens */
+        @media (max-width: 1280px) {
+            body { padding: 12px; }
+            .sidebar { width: 60px; padding: 16px 8px; overflow: hidden; }
+            .sidebar-logo span, .sidebar-item span, .sidebar [style*="font-size: 11px"] { display: none; }
+            .sidebar-logo { padding: 0 0 16px 0; justify-content: center; }
+            .sidebar-item { justify-content: center; padding: 12px 8px; gap: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Left Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-logo">
+                <i class="fa-solid fa-layer-group"></i>
+                <span>SEO Cluster Pro</span>
+            </div>
+            
+            <div class="sidebar-heading">Điều Khiển</div>
+            
+            <div class="sidebar-item active" data-action="go-home">
+                <i class="fa-solid fa-table-list"></i>
+                <span>Bảng Từ Khóa</span>
+            </div>
+            <div class="sidebar-item" data-modal="modalImport">
+                <i class="fa-solid fa-file-import"></i>
+                <span>Nhập Dữ Liệu</span>
+            </div>
+            
+            <div class="sidebar-heading" style="margin-top: 16px;">AI & Nội Dung</div>
+            
+            <div class="sidebar-item" data-action="open-outline-manager">
+                <i class="fa-solid fa-folder-open"></i>
+                <span>Quản lý Outline</span>
+            </div>
+            <div class="sidebar-item" data-action="generate-silo">
+                <i class="fa-solid fa-sitemap"></i>
+                <span>Cấu Trúc Silo</span>
+            </div>
+
+            <div class="sidebar-heading" style="margin-top: 16px;">Dữ Liệu & Phiên</div>
+            
+            <input type="file" id="importWorkspace" accept=".json" class="hidden">
+            <div class="sidebar-item" data-action="import-workspace">
+                <i class="fa-solid fa-folder-open"></i>
+                <span>Mở Phiên (.json)</span>
+            </div>
+            <div class="sidebar-item" data-action="export-workspace">
+                <i class="fa-solid fa-download"></i>
+                <span>Lưu Phiên (.json)</span>
+            </div>
+            <div class="sidebar-item" data-action="export-excel">
+                <i class="fa-solid fa-file-excel"></i>
+                <span>Xuất File Excel</span>
+            </div>
+
+            <div style="flex: 1;"></div>
+
+            <div class="sidebar-item" data-modal="modalConfig" style="margin-top: 0;">
+                <i class="fa-solid fa-gear"></i>
+                <span>Cấu Hình & API</span>
+            </div>
+            <div class="sidebar-item sidebar-item-danger" data-action="reset-all">
+                <i class="fa-solid fa-trash"></i>
+                <span>Khôi Phục Gốc</span>
+            </div>
+        </div>
+
+        <!-- Right Content Wrapper -->
+        <div class="right-wrapper">
+            <!-- Header -->
+            <header class="header">
+                <div class="flex items-center gap-4">
+                    <span id="dbStatus" style="font-size: 11px; color: var(--accent-green); background: rgba(52, 199, 89, 0.1); padding: 4px 10px; border-radius: 12px; font-weight: 500; display: flex; align-items: center; gap: 6px; transition: all 0.3s;"><i class="fa-solid fa-cloud-arrow-up"></i> Đã lưu Cache</span>
+                </div>
+                
+                <div class="flex items-center">
+                    <div class="flex">
+                        <div class="stat-item"><span class="stat-label">Từ khóa</span><span class="stat-val" id="statTotal">0</span></div>
+                        <div class="stat-item"><span class="stat-label">Đã cào</span><span class="stat-val" style="color: var(--accent-blue)" id="statScraped">0</span></div>
+                        <div class="stat-item"><span class="stat-label">Nhóm</span><span class="stat-val" style="color: var(--accent-green)" id="statGroups">0</span></div>
+                    </div>
+                    <div style="width: 1px; height: 28px; background: var(--border-light); margin: 0 16px;"></div>
+                    <button class="btn btn-ghost" data-action="toggle-theme" title="Sáng/Tối" style="padding: 8px 12px; border-radius: 12px;"><i class="fa-solid fa-moon"></i></button>
+                </div>
+            </header>
+
+            <!-- Main Content Container -->
+            <div class="main-content">
+                <!-- Sub-Toolbar (Filters & Actions) -->
+                <div class="sub-toolbar" id="subToolbar">
+            <div class="filter-group">
+                <div class="filter-input-wrap" style="width: 180px;">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="fSearch" class="input-clean" placeholder="Tìm từ khóa...">
+                </div>
+                <div class="filter-divider"></div>
+                <div class="filter-input-wrap">
+                    <i class="fa-solid fa-filter"></i>
+                    <select id="fIntent" class="input-clean" style="width: 110px;">
+                        <option value="all">Mọi Intent</option>
+                        <option value="transactional">Mua hàng</option>
+                        <option value="informational">Thông tin</option>
+                    </select>
+                </div>
+                <div class="filter-divider"></div>
+                <div class="filter-input-wrap" style="width: 90px;">
+                    <i class="fa-solid fa-arrow-up" style="color: var(--accent-green);"></i>
+                    <input type="number" id="fMin" class="input-clean" value="0" placeholder="Vol ≥">
+                </div>
+                <div class="filter-divider"></div>
+                <div class="filter-input-wrap" style="width: 90px;">
+                    <i class="fa-solid fa-arrow-down" style="color: #f59e0b;"></i>
+                    <input type="number" id="fMax" class="input-clean" placeholder="Vol ≤">
+                </div>
+                <div class="filter-divider"></div>
+                <div class="filter-input-wrap" style="width: 130px;">
+                    <i class="fa-solid fa-plus-circle" style="color: #10b981;"></i>
+                    <input type="text" id="fInc" class="input-clean" placeholder="Chứa...">
+                </div>
+                <div class="filter-divider"></div>
+                <div class="filter-input-wrap" style="width: 130px;">
+                    <i class="fa-solid fa-minus-circle" style="color: #ef4444;"></i>
+                    <input type="text" id="fExc" class="input-clean" placeholder="Loại trừ...">
+                </div>
+                <div class="filter-divider"></div>
+                <div class="filter-input-wrap" style="width: 140px;">
+                    <i class="fa-solid fa-layer-group" style="color: var(--accent-purple);"></i>
+                    <select id="fCluster" class="input-clean">
+                        <option value="all">Mọi nhóm</option>
+                        <option value="unclustered">Chưa gom</option>
+                        <option value="small">Nhóm nhỏ (2-5)</option>
+                        <option value="medium">Nhóm vừa (6-15)</option>
+                        <option value="large">Nhóm lớn (16+)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <!-- Group Threshold Slider -->
+                <div class="filter-group" style="padding: 6px 12px; gap: 8px;">
+                    <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;"><i class="fa-solid fa-sliders" style="margin-right: 4px;"></i> Gom nhóm</span>
+                    <input type="range" id="clusterThreshold" min="1" max="10" value="3" style="width: 80px; cursor: pointer; margin: 0 4px;" title="Số URL chung tối thiểu để gom vào 1 nhóm">
+                    <span id="thresholdVal" style="font-size: 13px; font-weight: 600; color: var(--text-main); width: 45px; text-align: center; background: var(--bg-hover); padding: 2px 6px; border-radius: 6px;">3 URL</span>
+                    <button class="btn btn-ghost" style="padding: 4px 10px; font-size: 12px; font-weight: 600; color: var(--text-secondary); background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: 6px; box-shadow: var(--shadow-sm); transition: all 0.2s;" onclick="app.performClustering()" title="Áp dụng ngưỡng gom nhóm mới">
+                        <i class="fa-solid fa-rotate-right" style="color: var(--brand-primary);"></i>
+                    </button>
+                </div>
+
+                <!-- Progress Wrap -->
+                <div class="progress-wrap filter-group" id="progressWrap" style="display:none; padding: 6px 16px; gap: 12px; min-width: 250px;">
+                    <div class="progress-bar" style="width: 120px;"><div class="progress-bar-fill" id="progressFill" style="width:0%"></div></div>
+                    <div style="display: flex; flex-direction: column; line-height: 1.2;">
+                        <span class="text-xs font-mono" id="progressText" style="color: var(--text-main); font-weight: 500; font-size: 12px;"></span>
+                        <span id="keyStatus" style="font-size: 10px; color: var(--text-muted);"></span>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="flex gap-2">
+                    <button class="btn btn-primary" id="btnStartScrape" data-action="open-scrape-modal" style="min-width: 140px; border-radius: 20px; background: linear-gradient(135deg, var(--brand-primary), var(--accent-blue)); box-shadow: 0 4px 14px rgba(0, 102, 204, 0.4); font-weight: 600; letter-spacing: 0.02em; border: none;">
+                        <i class="fa-solid fa-bolt"></i> BẮT ĐẦU CÀO
+                    </button>
+                    <button class="btn btn-outline" id="btnCancelScrape" data-action="cancel-scrape" style="display:none; color: #ff3b30; border-radius: 20px; box-shadow: var(--shadow-sm); border-color: rgba(255, 59, 48, 0.3); background: var(--bg-surface);" title="Dừng hẳn quá trình cào">
+                        <i class="fa-solid fa-stop"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="data-table" id="resultsTable">
+                <thead>
+                    <tr>
+                        <th class="col-cb"><input type="checkbox" id="cbSelectAll"></th>
+                        <th style="width: 35%;" data-sort="keyword">Từ khóa <i class="fa-solid fa-arrow-down-short-wide" style="opacity:0.3; font-size:10px;"></i></th>
+                        <th style="width: 10%; text-align: right;" data-sort="volume">Volume <i class="fa-solid fa-arrow-down-short-wide" style="opacity:0.3; font-size:10px;"></i></th>
+                        <th style="width: 10%; text-align: center;" data-sort="intent">Intent <i class="fa-solid fa-arrow-down-short-wide" style="opacity:0.3; font-size:10px;"></i></th>
+                        <th style="width: 8%; text-align: center;">URLs</th>
+                        <th style="width: 8%; text-align: center;" data-sort="scraped" title="Trạng thái thu thập dữ liệu SERP — ✅ = đã cào, ⭕ = chưa cào">SERP <i class="fa-solid fa-circle-info" style="opacity:0.3; font-size:9px;"></i></th>
+                        <th style="width: 12%; text-align: right;"></th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Rows rendered here -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Floating Action Bar for Selection -->
+        <div class="floating-action-bar" id="fab">
+            <span class="font-mono" style="font-size:12px; font-weight:600;" id="fabCount">0 đã chọn</span>
+            <div style="width: 1px; height: 16px; background: var(--border-light);"></div>
+            <button class="fab-btn" data-action="scrape-selected"><i class="fa-solid fa-bolt" style="color: #f59e0b;"></i> Cào SERP</button>
+            <button class="fab-btn" data-action="outline-selected" style="color: var(--accent-purple);"><i class="fa-solid fa-wand-magic-sparkles"></i> Tạo Outline</button>
+            <button class="fab-btn" data-action="delete-selected" style="color: #ef4444;"><i class="fa-solid fa-trash"></i> Xóa</button>
+        </div>
+
+        <!-- Summary Footer (No Pagination) -->
+        <div class="pagination" style="justify-content: flex-start; padding: 12px 20px; border-top: 1px solid var(--border-light);">
+            <div class="text-xs text-muted">Tổng số <span id="pageInfo" class="font-mono" style="color: var(--text-main); font-weight: 600;">0</span> nhóm từ khóa</div>
+        </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODALS ================= -->
+
+    <!-- Modal: Nhập Dữ Liệu -->
+    <div class="modal-overlay" id="modalImport">
+        <div class="modal-content">
+            <div class="modal-header"><h3>Nhập Dữ Liệu</h3><button class="close-btn" data-close="modalImport">&times;</button></div>
+            <div class="modal-body">
+                <div id="quickSerperSetup" style="display: none; flex-direction: column; gap: 8px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+                    <div style="font-weight: 600; font-size: 13px; color: #f59e0b; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-triangle-exclamation"></i> Chưa cấu hình Serper API</div>
+                    <div style="font-size: 12px; color: var(--text-secondary);">Bạn cần Serper API Key để quét dữ liệu. Vui lòng nhập nhanh vào đây:</div>
+                    <div class="flex gap-2">
+                        <input type="password" id="quickSerperKey" class="input-base font-mono" placeholder="Nhập Serper API Key..." style="flex: 1; padding: 6px 12px; font-size: 12px;">
+                        <button class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;" onclick="app.saveQuickSerperKey()">Lưu & Tiếp tục</button>
+                    </div>
+                </div>
+
+                <label class="dropzone" style="display: block;">
+                    <input type="file" id="fileUpload" accept=".xlsx,.csv" class="hidden">
+                    <i class="fa-solid fa-cloud-arrow-up" style="font-size: 24px; color: var(--text-muted); margin-bottom: 8px;"></i>
+                    <div style="font-weight: 500;">Click hoặc Kéo thả file Excel/CSV</div>
+                    <div class="text-xs text-muted mt-1">Cột bắt buộc: Keyword, Volume</div>
+                </label>
+                <div style="text-align: center; color: var(--text-muted); font-size: 12px; margin-top: 12px;">- HOẶC -</div>
+                <div style="margin-top: 12px;">
+                    <span class="label">Nhập thủ công</span>
+                    <textarea id="manualInput" class="input-base font-mono" placeholder="sofa gia re, 1500&#10;ban ghe go, 500" style="min-height: 80px;"></textarea>
+                    <button class="btn btn-outline" style="width: 100%; margin-top: 8px;" data-action="import-manual">Thêm dữ liệu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Cấu Hình & API -->
+    <div class="modal-overlay" id="modalConfig">
+        <div class="modal-content modal-lg">
+            <div class="modal-header"><h3>Cấu Hình & Khóa API</h3><button class="close-btn" data-close="modalConfig">&times;</button></div>
+            <div class="modal-body" style="flex-direction: row; gap: 24px;">
+                <!-- Column 1: Cào dữ liệu SERP (Serper.dev) -->
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
+                    <span class="label" style="color: var(--brand-primary); font-size: 13px; font-weight: 700; border-bottom: 1px solid var(--border-light); padding-bottom: 8px; margin-bottom: 4px;"><i class="fa-solid fa-spider"></i> Cấu hình Thu thập SERP</span>
+                    
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="label" style="margin: 0;">Khóa API (Serper.dev)</span>
+                            <span class="font-mono text-xs text-muted" id="keyCountText">0 keys</span>
+                        </div>
+                        <textarea id="apiKeysInput" class="input-base font-mono" style="min-height: 80px;" placeholder="Dán các mã API Key vào đây (mỗi dòng 1 mã)"></textarea>
+                        <button class="btn btn-outline" style="width: 100%; margin-top: 8px;" data-action="check-keys">Kiểm tra trạng thái API</button>
+                        <div id="apiReport" class="hidden" style="margin-top: 8px; font-family: 'JetBrains Mono'; font-size: 11px; max-height: 150px; overflow-y: auto; background: var(--bg-hover); padding: 8px; border-radius: 6px; border: 1px solid var(--border-light);"></div>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <div style="flex: 1;"><span class="label">Quốc gia (GL)</span><select id="configGl" class="input-base"><option value="vn">Việt Nam</option><option value="us">United States</option></select></div>
+                        <div style="flex: 1;"><span class="label">Ngôn ngữ (HL)</span><select id="configHl" class="input-base"><option value="vi">Tiếng Việt</option><option value="en">English</option></select></div>
+                    </div>
+                    
+                    <div class="flex gap-2">
+                        <div style="flex: 1;"><span class="label">Batch Size (1-100)</span><input type="number" id="configBatchSize" class="input-base" value="50" min="1" max="100"></div>
+                        <div style="flex: 1;"><span class="label">Delay (ms)</span><input type="number" id="configDelay" class="input-base" value="0" min="0" step="100"></div>
+                    </div>
+                    
+                    <div>
+                        <span class="label">Loại trừ Tên miền (Blacklist)</span>
+                        <textarea id="blacklistInput" class="input-base font-mono" placeholder="shopee.vn&#10;tiki.vn" style="min-height: 60px;"></textarea>
+                    </div>
+                </div>
+
+                <!-- Separator -->
+                <div style="width: 1px; background: var(--border-light); margin: 0 4px;"></div>
+
+                <!-- Column 2: Cấu hình AI -->
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
+                    <span class="label" style="color: var(--accent-purple); font-size: 13px; font-weight: 700; border-bottom: 1px solid var(--border-light); padding-bottom: 8px; margin-bottom: 4px;"><i class="fa-solid fa-wand-magic-sparkles"></i> Cấu hình AI (Gemini)</span>
+                    
+                    <div>
+                        <span class="label">Gemini API Key</span>
+                        <input type="password" id="geminiKey" class="input-base font-mono" placeholder="Nhập Gemini API Key...">
+                        <div class="flex justify-between items-center mt-2">
+                            <div class="text-xs text-muted">Lấy key miễn phí tại <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: #3b82f6; text-decoration: none;">Google AI Studio</a>.</div>
+                            <button class="btn btn-outline" style="padding: 4px 10px; font-size: 11px;" data-action="check-gemini-key">Test Key</button>
+                        </div>
+                        <div id="geminiApiReport" class="hidden" style="margin-top: 8px; font-family: 'JetBrains Mono'; font-size: 11px; padding: 6px 8px; border-radius: 4px; border: 1px solid var(--border-light);"></div>
+                    </div>
+
+                    <div>
+                        <span class="label">Phiên bản Model</span>
+                        <select id="geminiModel" class="input-base">
+                            <option value="gemini-3.1-flash-lite-preview">gemini-3.1-flash-lite-preview</option>
+                            <option value="gemini-3-flash-preview">gemini-3-flash-preview</option>
+                            <option value="gemini-2.5-flash">gemini-2.5-flash</option>
+                            <option value="gemini-2.5-flash-lite">gemini-2.5-flash-lite</option>
+                        </select>
+                    </div>
+
+                    <div style="background: var(--bg-hover); padding: 12px; border-radius: 8px; border: 1px solid var(--border-light); display: flex; flex-direction: column; gap: 12px;">
+                        <span class="label" style="margin-bottom: 0;">Tính năng nâng cao (Tùy chọn)</span>
+                        <label style="display: flex; gap: 8px; cursor: pointer; align-items: center; font-size: 12px;">
+                            <input type="checkbox" id="geminiOptThinking"> Bật Tư duy sâu (Thinking Level: HIGH)
+                        </label>
+                        <label style="display: flex; gap: 8px; cursor: pointer; align-items: center; font-size: 12px;">
+                            <input type="checkbox" id="geminiOptSearch"> Bật Tìm kiếm Google (Grounding)
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer"><button class="btn btn-primary" onclick="app.saveConfigAndClose()">Lưu Cấu Hình</button></div>
+        </div>
+    </div>
+
+    <!-- Modal: Start Scraping Option -->
+    <div class="modal-overlay" id="modalScrape">
+        <div class="modal-content" style="width: 400px;">
+            <div class="modal-header"><h3>Bắt Đầu Thu Thập (SERP)</h3><button class="close-btn" data-close="modalScrape">&times;</button></div>
+            <div class="modal-body" style="gap: 12px;">
+                <label style="display: flex; gap: 8px; cursor: pointer; padding: 12px; border: 1px solid var(--border-light); border-radius: 6px;">
+                    <input type="radio" name="scrapeMode" value="resume" checked style="margin-top: 2px;">
+                    <div><div style="font-weight: 500;">Cào tiếp các từ chưa cào</div><div class="text-xs text-muted">Bỏ qua các từ đã có dữ liệu.</div></div>
+                </label>
+                <label style="display: flex; gap: 8px; cursor: pointer; padding: 12px; border: 1px solid var(--border-light); border-radius: 6px;">
+                    <input type="radio" name="scrapeMode" value="all" style="margin-top: 2px;">
+                    <div><div style="font-weight: 500;">Cào lại toàn bộ</div><div class="text-xs text-muted">Xóa dữ liệu SERP cũ và làm lại từ đầu.</div></div>
+                </label>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" data-close="modalScrape">Hủy</button>
+                <button class="btn btn-primary" data-action="run-scrape"><i class="fa-solid fa-play"></i> Thực thi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Xem URLs -->
+    <div class="modal-overlay" id="modalUrl">
+        <div class="modal-content">
+            <div class="modal-header"><h3 id="modalUrlTitle">Top 10 URLs</h3><button class="close-btn" data-close="modalUrl">&times;</button></div>
+            <div class="modal-body" id="modalUrlBody" style="max-height: 400px; padding: 16px;"></div>
+        </div>
+    </div>
+
+    <!-- Modal: AI Markdown Viewer -->
+    <div class="modal-overlay" id="modalAI" style="z-index: 60;">
+        <div class="modal-content modal-lg" style="width: calc(100vw - 100px); max-width: 1400px; height: 92vh;">
+            <div class="modal-header">
+                <h3 id="modalAITitle" style="color: var(--accent-purple);"><i class="fa-solid fa-wand-magic-sparkles"></i> AI SEO Engine</h3>
+                <button class="close-btn" data-close="modalAI">&times;</button>
+            </div>
+            <div class="modal-body" style="flex: 1; padding: 0; background: var(--bg-page); line-height: 1.6; font-size: 14px; overflow: hidden;">
+                <div id="modalAIBody" style="height: 100%; color: var(--text-main);"></div>
+            </div>
+            <div class="modal-footer" style="justify-content: space-between;">
+                <span class="text-xs text-muted" id="modalAIStatus">Gemini</span>
+                <div class="flex gap-2">
+                    <button class="btn btn-outline" id="btnForceAI" style="display:none;"><i class="fa-solid fa-rotate-right"></i> Tạo Lại</button>
+                    <button class="btn btn-outline" data-close="modalAI">Đóng</button>
+                    <button class="btn btn-primary" onclick="app.copyAIContent()"><i class="fa-regular fa-copy"></i> Copy Nội Dung</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Batch Outline Progress -->
+    <div class="modal-overlay" id="modalBatchOutline" style="z-index: 55;">
+        <div class="modal-content modal-lg" style="width: 800px; max-height: 85vh;">
+            <div class="modal-header">
+                <h3 id="modalBatchTitle" style="color: var(--accent-purple);"><i class="fa-solid fa-layer-group"></i> Batch Outline Generator</h3>
+                <button class="close-btn" data-close="modalBatchOutline">&times;</button>
+            </div>
+            <div class="modal-body" style="flex: 1; padding: 24px 32px; background: var(--bg-page); overflow-y: auto;" id="modalBatchBody">
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Outline Manager -->
+    <div class="modal-overlay" id="modalOutlineManager" style="z-index: 50;">
+        <div class="modal-content modal-lg" style="width: 800px; max-height: 85vh;">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-folder-open" style="color: var(--brand-primary);"></i> Quản lý Outline Đã Tạo</h3>
+                <button class="close-btn" data-close="modalOutlineManager">&times;</button>
+            </div>
+            <div class="modal-body" style="flex: 1; padding: 24px 32px; background: var(--bg-page); overflow-y: auto;">
+                <div id="outlineManagerList" style="display: flex; flex-direction: column; gap: 12px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. IndexedDB Wrapper ---
+        const DB_NAME = 'SeoGrouperPro'; const STORE_NAME = 'workspace';
+        const dbHelper = {
+            open: () => new Promise((resolve, reject) => { const req = indexedDB.open(DB_NAME, 1); req.onupgradeneeded = e => { if (!e.target.result.objectStoreNames.contains(STORE_NAME)) e.target.result.createObjectStore(STORE_NAME); }; req.onsuccess = e => resolve(e.target.result); req.onerror = e => reject(e); }),
+            save: async (key, data) => { const db = await dbHelper.open(); return new Promise((resolve, reject) => { const tx = db.transaction(STORE_NAME, 'readwrite'); tx.objectStore(STORE_NAME).put(data, key); tx.oncomplete = resolve; tx.onerror = reject; }); },
+            get: async (key) => { const db = await dbHelper.open(); return new Promise((resolve, reject) => { const req = db.transaction(STORE_NAME, 'readonly').objectStore(STORE_NAME).get(key); req.onsuccess = () => resolve(req.result); req.onerror = reject; }); },
+            clear: async () => { const db = await dbHelper.open(); return new Promise((resolve) => { const tx = db.transaction(STORE_NAME, 'readwrite'); tx.objectStore(STORE_NAME).clear(); tx.oncomplete = resolve; }); }
+        };
+
+        // --- URL Normalizer (always Array<{link,title,snippet}>) ---
+        function normalizeUrls(urls) {
+            if(!urls) return null;
+            if(urls instanceof Set) return Array.from(urls).map(u => typeof u === 'string' ? {link:u,title:'',snippet:''} : u);
+            if(Array.isArray(urls)) return urls.map(u => typeof u === 'string' ? {link:u,title:'',snippet:''} : u);
+            return null;
+        }
+
+        // --- 2. Main App Logic ---
+        const app = {
+            data: [],
+            apiKeys: [], blacklist: [],
+            _lastDeletedBackup: [],
+            _scrapeErrors: [],
+            _scrapeStartTime: 0, _scrapeStartCount: 0,
+            state: { 
+                isRunning: false, isPaused: false, currentKeyIdx: 0, sortCol: 'volume', sortAsc: false, 
+                currentPage: 1, pageSize: 100, expandedGroups: new Set(),
+                selectedKeys: new Set(), lastCheckedIdx: null,
+                fSearch: '', fIntent: 'all', fMin: 0, fInc: '', fExc: ''
+            },
+            
+            els: {},
+
+            init() {
+                this.cacheElements();
+                this.bindEvents();
+                this.loadState();
+            },
+
+            cacheElements() {
+                const id = document.getElementById.bind(document);
+                this.els = {
+                    apiKeys: id('apiKeysInput'), blacklist: id('blacklistInput'), geminiKey: id('geminiKey'), geminiModel: id('geminiModel'),
+                    gOptThinking: id('geminiOptThinking'), gOptSearch: id('geminiOptSearch'),
+                    cGl: id('configGl'), cHl: id('configHl'), cThresh: id('clusterThreshold'),
+                    configBatchSize: id('configBatchSize'), configDelay: id('configDelay'),
+                    fSearch: id('fSearch'), fIntent: id('fIntent'), fMin: id('fMin'), fMax: id('fMax'), fInc: id('fInc'), fExc: id('fExc'), fCluster: id('fCluster'),
+                    btnStart: id('btnStartScrape'), progText: id('progressText'), progWrap: id('progressWrap'), progFill: id('progressFill'), tableBody: id('tableBody')
+                };
+            },
+
+            bindEvents() {
+                // === Keyboard Shortcuts ===
+                document.addEventListener('keydown', e => {
+                    if(e.key === 'Escape') document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
+                    if(e.ctrlKey && e.key === 'f') { e.preventDefault(); this.els.fSearch.focus(); this.els.fSearch.select(); }
+                    if(e.ctrlKey && e.key === 'z' && this._lastDeletedBackup.length > 0) { e.preventDefault(); this.undoDelete(this._lastDeletedBackup); }
+                });
+
+                // === Actions Delegation ===
+                document.body.addEventListener('click', e => {
+                    const btn = e.target.closest('[data-action]');
+                    if (btn) {
+                        const action = btn.getAttribute('data-action');
+                        // Sidebar active state
+                        if(btn.closest('.sidebar-item')) {
+                            document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+                            btn.closest('.sidebar-item').classList.add('active');
+                        }
+                        if(action === 'go-home') { this.clearFilters(); this.renderTable(); }
+                        if(action === 'import-workspace') document.getElementById('importWorkspace').click();
+                        if(action === 'export-workspace') this.exportWorkspace();
+                        if(action === 'reset-all') this.resetAll();
+                        if(action === 'export-excel') this.exportExcel();
+                        if(action === 'open-scrape-modal') this.openScrapeModal();
+                        if(action === 'run-scrape') this.startScrapeFlow();
+                        if(action === 'check-keys') this.checkApiKeys();
+                        if(action === 'check-gemini-key') this.checkGeminiKey();
+                        if(action === 'import-manual') this.importManual();
+                        if(action === 'toggle-theme') this.toggleTheme();
+                        if(action === 'generate-silo') this.generateSilo();
+                        if(action === 'open-outline-manager') this.openOutlineManager();
+
+                        // FAB Actions
+                        if(action === 'delete-selected') this.deleteSelected();
+                        if(action === 'scrape-selected') this.scrapeSelected();
+                        if(action === 'outline-selected') this.generateBatchOutline();
+                        if(action === 'cancel-scrape') this.cancelScrape();
+                    }
+                    
+                    // Modal open via data-modal (set sidebar active too)
+                    const modalBtn = e.target.closest('[data-modal]');
+                    if (modalBtn) {
+                        const modalId = modalBtn.getAttribute('data-modal');
+                        if (modalId === 'modalImport') {
+                            const hasKeys = document.getElementById('apiKeysInput').value.trim().length > 0;
+                            const qs = document.getElementById('quickSerperSetup');
+                            if(qs) qs.style.display = hasKeys ? 'none' : 'flex';
+                        }
+                        document.getElementById(modalId).classList.add('active');
+                        if(modalBtn.closest('.sidebar-item')) {
+                            document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+                            modalBtn.closest('.sidebar-item').classList.add('active');
+                        }
+                    }
+                    const closeBtn = e.target.closest('[data-close]');
+                    if (closeBtn) document.getElementById(closeBtn.getAttribute('data-close')).classList.remove('active');
+
+                    // Sort — all sortable columns
+                    const th = e.target.closest('th[data-sort]');
+                    if (th) this.handleSort(th.getAttribute('data-sort'));
+                    
+                    // Expand/Collapse Group
+                    const toggleEl = e.target.closest('.kw-toggle');
+                    if (toggleEl) {
+                        const grp = toggleEl.getAttribute('data-group');
+                        if(this.state.expandedGroups.has(grp)) this.state.expandedGroups.delete(grp);
+                        else this.state.expandedGroups.add(grp);
+                        this.renderTable();
+                        return;
+                    }
+
+                    // Click on row → toggle checkbox
+                    const parentRow = e.target.closest('.cluster-parent, .cluster-child, .unclustered-row');
+                    if (parentRow && !e.target.closest('input') && !e.target.closest('button') && !e.target.closest('.kw-toggle')) {
+                        const cb = parentRow.querySelector('.row-cb');
+                        if (cb) {
+                            cb.checked = !cb.checked;
+                            const key = cb.getAttribute('data-key');
+                            if(cb.checked) this.state.selectedKeys.add(key); else this.state.selectedKeys.delete(key);
+                            this.updateFAB();
+                        }
+                    }
+                });
+
+                // === Filters ===
+                const filterInputs = [this.els.fSearch, this.els.fIntent, this.els.fMin, this.els.fMax, this.els.fInc, this.els.fExc, this.els.fCluster];
+                filterInputs.forEach(el => { if(el) el.addEventListener('input', () => { this.state.currentPage = 1; this.renderTable(); this.renderActiveFilters(); }); });
+                
+                document.getElementById('fileUpload').addEventListener('change', e => this.handleFileUpload(e));
+                document.getElementById('importWorkspace').addEventListener('change', e => this.handleWorkspaceImport(e));
+                this.els.cThresh.addEventListener('input', e => { document.getElementById('thresholdVal').innerText = e.target.value + ' URL'; });
+                this.els.apiKeys.addEventListener('input', e => this.parseKeys(e.target.value));
+                this.els.blacklist.addEventListener('input', e => this.blacklist = e.target.value.split('\n').map(x=>x.trim().toLowerCase()).filter(x=>x));
+                
+                // Select All
+                document.getElementById('cbSelectAll').addEventListener('change', e => {
+                    const cbs = document.querySelectorAll('.row-cb');
+                    cbs.forEach(cb => {
+                        cb.checked = e.target.checked;
+                        if(cb.checked) this.state.selectedKeys.add(cb.getAttribute('data-key'));
+                        else this.state.selectedKeys.delete(cb.getAttribute('data-key'));
+                    });
+                    this.updateFAB();
+                });
+
+                // Shift-Click Checkbox
+                this.els.tableBody.addEventListener('click', e => {
+                    if (e.target.classList.contains('row-cb')) {
+                        const cb = e.target;
+                        const key = cb.getAttribute('data-key');
+                        const idx = Array.from(document.querySelectorAll('.row-cb')).indexOf(cb);
+                        
+                        if (e.shiftKey && this.state.lastCheckedIdx !== null) {
+                            const start = Math.min(this.state.lastCheckedIdx, idx);
+                            const end = Math.max(this.state.lastCheckedIdx, idx);
+                            const cbs = document.querySelectorAll('.row-cb');
+                            for(let i=start; i<=end; i++) {
+                                cbs[i].checked = cb.checked;
+                                const k = cbs[i].getAttribute('data-key');
+                                if(cb.checked) this.state.selectedKeys.add(k); else this.state.selectedKeys.delete(k);
+                            }
+                        } else {
+                            if(cb.checked) this.state.selectedKeys.add(key); else this.state.selectedKeys.delete(key);
+                        }
+                        this.state.lastCheckedIdx = idx;
+                        this.updateFAB();
+                    }
+                });
+            },
+
+            // === Active Filters Bar ===
+            renderActiveFilters() {
+                let existingBar = document.getElementById('activeFiltersBar');
+                const filters = [];
+                if(this.els.fSearch.value) filters.push({ label: `Tìm: "${this.els.fSearch.value}"`, clear: () => { this.els.fSearch.value = ''; } });
+                if(this.els.fIntent.value !== 'all') filters.push({ label: `Intent: ${this.els.fIntent.selectedOptions[0]?.text}`, clear: () => { this.els.fIntent.value = 'all'; } });
+                if(parseInt(this.els.fMin.value) > 0) filters.push({ label: `Vol ≥ ${this.els.fMin.value}`, clear: () => { this.els.fMin.value = 0; } });
+                if(this.els.fMax.value) filters.push({ label: `Vol ≤ ${this.els.fMax.value}`, clear: () => { this.els.fMax.value = ''; } });
+                if(this.els.fInc.value) filters.push({ label: `Chứa: ${this.els.fInc.value}`, clear: () => { this.els.fInc.value = ''; } });
+                if(this.els.fExc.value) filters.push({ label: `Loại: ${this.els.fExc.value}`, clear: () => { this.els.fExc.value = ''; } });
+                if(this.els.fCluster && this.els.fCluster.value !== 'all') filters.push({ label: `Nhóm: ${this.els.fCluster.selectedOptions[0]?.text}`, clear: () => { this.els.fCluster.value = 'all'; } });
+
+                if(filters.length === 0) { if(existingBar) existingBar.remove(); return; }
+
+                if(!existingBar) {
+                    existingBar = document.createElement('div');
+                    existingBar.id = 'activeFiltersBar';
+                    existingBar.className = 'active-filters-bar';
+                    const mainContent = document.querySelector('.main-content');
+                    const subToolbar = document.getElementById('subToolbar');
+                    mainContent.insertBefore(existingBar, subToolbar.nextSibling);
+                }
+                
+                existingBar.innerHTML = `<i class="fa-solid fa-filter" style="color:var(--text-muted);"></i> <span style="color:var(--text-muted);">Bộ lọc:</span> ` +
+                    filters.map((f, i) => `<span class="filter-chip">${f.label} <span class="chip-remove" data-filter-idx="${i}">&times;</span></span>`).join('') +
+                    ` <span class="chip-remove" style="cursor:pointer; color:var(--text-muted); font-size:11px; margin-left:8px;" data-filter-idx="all"><i class="fa-solid fa-xmark"></i> Xóa tất cả</span>`;
+                
+                existingBar.addEventListener('click', e => {
+                    const removeBtn = e.target.closest('[data-filter-idx]');
+                    if(!removeBtn) return;
+                    const idx = removeBtn.getAttribute('data-filter-idx');
+                    if(idx === 'all') { this.clearFilters(); }
+                    else { filters[parseInt(idx)]?.clear(); this.renderTable(); this.renderActiveFilters(); }
+                });
+            },
+
+            updateFAB() {
+                const fab = document.getElementById('fab');
+                if(this.state.selectedKeys.size > 0) {
+                    fab.classList.add('active');
+                    document.getElementById('fabCount').innerText = `${this.state.selectedKeys.size} đã chọn`;
+                } else {
+                    fab.classList.remove('active');
+                }
+            },
+
+            showToast(msg, icon = 'check') {
+                let t = document.getElementById('appToast');
+                if(!t) { t = document.createElement('div'); t.id = 'appToast'; t.className = 'toast'; document.body.appendChild(t); }
+                t.innerHTML = `<i class="fa-solid fa-${icon}" style="color: var(--accent-green)"></i> ${msg}`;
+                t.classList.add('show');
+                clearTimeout(this._toastTimer);
+                this._toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+            },
+
+            toggleTheme() {
+                const html = document.documentElement;
+                const newTheme = html.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+                html.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+            },
+
+            parseKeys(text) {
+                this.apiKeys = text.split(/[\n,]+/).map(k => k.trim()).filter(k => k.length > 5);
+                document.getElementById('keyCountText').innerText = `${this.apiKeys.length} keys`;
+            },
+
+            // --- Storage ---
+            async saveState() {
+                const status = document.getElementById('dbStatus');
+                status.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Đang lưu...';
+                status.style.color = 'var(--accent-blue)';
+                status.style.background = 'rgba(0, 122, 255, 0.1)';
+                try {
+                    await dbHelper.save('session', {
+                        originalData: this.data.map(d => ({...d, urls: normalizeUrls(d.urls)})),
+                        settings: {
+                            apiKeys: this.els.apiKeys.value, blacklist: this.els.blacklist.value,
+                            geminiKey: this.els.geminiKey.value, geminiModel: this.els.geminiModel.value,
+                            gOptThinking: this.els.gOptThinking.checked, gOptSearch: this.els.gOptSearch.checked,
+                            gl: this.els.cGl.value, hl: this.els.cHl.value, thresh: this.els.cThresh.value,
+                            batchSize: parseInt(this.els.configBatchSize.value) || 50,
+                            delay: parseInt(this.els.configDelay.value) || 0,
+                        },
+                        siloCache: this.state.siloCache || null
+                    });
+                    setTimeout(() => {
+                        status.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Đã lưu Cache';
+                        status.style.color = 'var(--accent-green)';
+                        status.style.background = 'rgba(52, 199, 89, 0.1)';
+                    }, 500);
+                } catch(e) { 
+                    status.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Lỗi Cache';
+                    status.style.color = '#ff3b30';
+                    status.style.background = 'rgba(255, 59, 48, 0.1)';
+                }
+            },
+
+            async loadState() {
+                const theme = localStorage.getItem('theme'); if(theme) document.documentElement.setAttribute('data-theme', theme);
+                try {
+                    const state = await dbHelper.get('session');
+                    if (state) {
+                        if(state.settings) {
+                            this.els.apiKeys.value = state.settings.apiKeys || ''; this.parseKeys(this.els.apiKeys.value);
+                            this.els.blacklist.value = state.settings.blacklist || ''; this.blacklist = this.els.blacklist.value.split('\n').map(x=>x.trim().toLowerCase()).filter(x=>x);
+                            this.els.geminiKey.value = state.settings.geminiKey || ''; 
+                            const validModels = ['gemini-3.1-flash-lite-preview', 'gemini-3-flash-preview', 'gemini-2.5-flash', 'gemini-2.5-flash-lite'];
+                            let savedModel = state.settings.geminiModel || validModels[0];
+                            if (!validModels.includes(savedModel)) savedModel = validModels[0];
+                            this.els.geminiModel.value = savedModel;
+                            this.els.gOptThinking.checked = state.settings.gOptThinking || false;
+                            this.els.gOptSearch.checked = state.settings.gOptSearch || false;
+                            this.els.cGl.value = state.settings.gl || 'vn'; this.els.cHl.value = state.settings.hl || 'vi';
+                            this.els.cThresh.value = state.settings.thresh || 3; document.getElementById('thresholdVal').innerText = `${this.els.cThresh.value} URL`;
+                            this.els.configBatchSize.value = state.settings.batchSize || 50;
+                            this.els.configDelay.value = state.settings.delay || 0;
+                        }
+                        // Normalize all urls on load
+                        this.data = (state.originalData || []).map(d => ({...d, urls: normalizeUrls(d.urls)}));
+                        this.state.siloCache = state.siloCache || null;
+                        this.updateStats();
+                        this.renderTable();
+                        
+                        // Resume notification
+                        const pending = this.data.filter(d => !d.isScraped).length;
+                        const total = this.data.length;
+                        if(pending > 0 && total > 0 && pending < total) {
+                            this.showToast(`Còn ${pending}/${total} từ khóa chưa cào. Bấm "BẮT ĐẦU CÀO" để tiếp tục.`, 'circle-exclamation');
+                        }
+                    }
+                } catch(e) {}
+            },
+
+            saveConfigAndClose() {
+                this.saveState();
+                document.getElementById('modalConfig').classList.remove('active');
+                this.showToast('Đã lưu cấu hình!', 'check');
+            },
+
+            async resetAll() { if(confirm("Bạn có chắc muốn xóa toàn bộ dữ liệu hiện tại?")) { await dbHelper.clear(); window.location.reload(); } },
+
+            // --- File Handling & Actions ---
+            async handleFileUpload(e) {
+                const file = e.target.files[0]; if(!file) return;
+                const reader = new FileReader();
+                reader.onerror = () => this.showToast('Không đọc được file!', 'triangle-exclamation');
+                reader.onload = async (evt) => {
+                    try {
+                        const bstr = evt.target.result;
+                        const wb = XLSX.read(bstr, { type: 'binary' });
+                        const json = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1 });
+                        if(json.length < 2) { this.showToast('File trống hoặc không có dữ liệu!', 'triangle-exclamation'); return; }
+                        const newData = [];
+                        for(let r=1; r<json.length; r++) {
+                            const kw = json[r][0];
+                            if(kw) newData.push({ keyword: kw.toString().trim(), volume: json[r][1] ? parseInt(json[r][1]) : 0, urls: null, cluster: null, isScraped: false, intent: null });
+                        }
+                        if(newData.length === 0) { this.showToast('Không tìm thấy cột Keyword/Volume hợp lệ!', 'triangle-exclamation'); return; }
+                        this.mergeData(newData);
+                        this.showToast(`Đã nhập ${newData.length} từ khóa!`, 'check');
+                        e.target.value = ''; document.getElementById('modalImport').classList.remove('active');
+                    } catch(err) { this.showToast('Lỗi đọc file: ' + err.message, 'triangle-exclamation'); }
+                };
+                reader.readAsBinaryString(file);
+            },
+
+            importManual() {
+                const lines = document.getElementById('manualInput').value.split('\n');
+                const newData = [];
+                lines.forEach(l => {
+                    const trimmed = l.trim(); if(!trimmed) return;
+                    const match = trimmed.match(/^(.*?)(?:[, \t]+(\d+))?$/);
+                    if(match && match[1]) newData.push({ keyword: match[1].trim(), volume: match[2] ? parseInt(match[2]) : 0, urls: null, cluster: null, isScraped: false, intent: null });
+                });
+                if(newData.length) this.mergeData(newData);
+                document.getElementById('manualInput').value = ''; document.getElementById('modalImport').classList.remove('active');
+            },
+
+            mergeData(newData) {
+                const map = new Map();
+                this.data.forEach(i => map.set(i.keyword.toLowerCase(), i));
+                newData.forEach(i => map.set(i.keyword.toLowerCase(), i));
+                this.data = Array.from(map.values());
+                this.updateStats(); this.saveState(); this.renderTable();
+            },
+
+            deleteSelected() {
+                const count = this.state.selectedKeys.size;
+                if(count === 0) return;
+                this._lastDeletedBackup = this.data.filter(d => this.state.selectedKeys.has(d.keyword));
+                this.data = this.data.filter(d => !this.state.selectedKeys.has(d.keyword));
+                this.state.selectedKeys.clear(); this.updateFAB();
+                this.updateStats(); this.saveState(); this.renderTable();
+                let t = document.getElementById('appToast');
+                if(!t) { t = document.createElement('div'); t.id = 'appToast'; t.className = 'toast'; document.body.appendChild(t); }
+                t.innerHTML = `<i class="fa-solid fa-trash" style="color:#ef4444"></i> Đã xóa ${count} từ khóa. <button onclick="app.undoDelete(app._lastDeletedBackup)" style="margin-left:8px;padding:2px 8px;border:1px solid var(--border-light);border-radius:6px;cursor:pointer;background:var(--bg-surface);font-size:12px;">Hoàn tác (Ctrl+Z)</button>`;
+                t.classList.add('show');
+                clearTimeout(this._toastTimer);
+                this._toastTimer = setTimeout(() => t.classList.remove('show'), 6000);
+            },
+
+            undoDelete(backup) {
+                if(!backup || backup.length === 0) return;
+                this.data = [...this.data, ...backup];
+                this._lastDeletedBackup = [];
+                this.updateStats(); this.saveState(); this.renderTable();
+                this.showToast(`Đã khôi phục ${backup.length} từ khóa!`, 'rotate-left');
+            },
+
+            // --- API & Scrape Flow ---
+            async checkApiKeys() {
+                this.parseKeys(this.els.apiKeys.value);
+                if(this.apiKeys.length === 0) return alert('Chưa có API key!');
+                const rep = document.getElementById('apiReport'); rep.classList.remove('hidden'); rep.innerHTML = '<span style="color: var(--text-muted)">Đang kiểm tra...</span>';
+                let html = '<div class="flex-col gap-2">';
+                for(let i=0; i<this.apiKeys.length; i++) {
+                    const key = this.apiKeys[i]; const masked = key.length > 8 ? key.substring(0,5) + '...' + key.substring(key.length-4) : '***';
+                    try {
+                        const res = await fetch('https://google.serper.dev/search', { method: 'POST', headers: { 'X-API-KEY': key, 'Content-Type': 'application/json' }, body: JSON.stringify({ q: "ping", num: 1 }) });
+                        if(res.ok) html += `<div class="flex justify-between border-b border-light pb-1"><span>#${i+1} ${masked}</span><span style="color: #10b981">Valid</span></div>`;
+                        else html += `<div class="flex justify-between border-b border-light pb-1"><span>#${i+1} ${masked}</span><span style="color: #ef4444">Invalid</span></div>`;
+                    } catch(e) { html += `<div class="flex justify-between border-b border-light pb-1"><span>#${i+1} ${masked}</span><span style="color: #f59e0b">Error</span></div>`; }
+                }
+                rep.innerHTML = html + '</div>';
+            },
+
+            async checkGeminiKey() {
+                const rep = document.getElementById('geminiApiReport'); rep.classList.remove('hidden'); 
+                const key = this.els.geminiKey.value.trim();
+                if(!key) { rep.innerHTML = '<span style="color: #ef4444">Vui lòng nhập API Key trước.</span>'; return; }
+                rep.innerHTML = '<span style="color: var(--text-muted)"><i class="fa-solid fa-circle-notch fa-spin"></i> Đang kết nối Gemini...</span>';
+                try {
+                    await this.callGeminiAPI("ping");
+                    rep.innerHTML = `<span style="color: #10b981"><i class="fa-solid fa-check"></i> Kết nối thành công! Key & Model hợp lệ.</span>`;
+                } catch (e) {
+                    rep.innerHTML = `<span style="color: #ef4444"><i class="fa-solid fa-xmark"></i> ${e.message}</span>`;
+                }
+            },
+
+            openScrapeModal() {
+                if(this.state.isRunning) {
+                    // Pause toggle — nút này chỉ là Pause/Resume
+                    this.state.isPaused = !this.state.isPaused;
+                    this.els.btnStart.innerHTML = this.state.isPaused
+                        ? '<i class="fa-solid fa-play"></i> TIẾP TỤC'
+                        : '<i class="fa-solid fa-pause"></i> TẠM DỪNG';
+                    this.els.progText.innerText = this.state.isPaused ? 'Đã tạm dừng...' : 'Đang thu thập SERP...';
+                    return;
+                }
+                this.parseKeys(this.els.apiKeys.value);
+                if(this.apiKeys.length === 0) {
+                    document.getElementById('modalConfig').classList.add('active');
+                    this.showToast('Vui lòng nhập API Key trước!', 'triangle-exclamation');
+                    return;
+                }
+                document.getElementById('modalScrape').classList.add('active');
+            },
+
+            cancelScrape() {
+                this.state.isRunning = false;
+                this.state.isPaused = false;
+                this.els.btnStart.innerHTML = '<i class="fa-solid fa-play"></i> BẮT ĐẦU CÀO';
+                this.els.btnStart.classList.remove('running');
+                document.getElementById('btnCancelScrape').style.display = 'none';
+                this.els.progText.innerText = 'Đã dừng.';
+                this.showToast('Đã dừng quá trình cào.', 'stop');
+            },
+
+            scrapeSelected() {
+                if(this.state.selectedKeys.size === 0) return;
+                this.parseKeys(this.els.apiKeys.value);
+                if(this.apiKeys.length === 0) { document.getElementById('modalConfig').classList.add('active'); return alert('Vui lòng nhập API Key.'); }
+                
+                // Clear cluster data for selected before scraping
+                this.data.forEach(d => { if(this.state.selectedKeys.has(d.keyword)) { d.cluster = null; d.urls = null; d.isScraped = false; }});
+                this.state.selectedKeys.clear(); this.updateFAB();
+                this.startScrapeCore(true); // mode selected
+            },
+
+            startScrapeFlow() {
+                const mode = document.querySelector('input[name="scrapeMode"]:checked').value;
+                document.getElementById('modalScrape').classList.remove('active');
+                
+                if (mode === 'all') {
+                    this.data.forEach(d => { d.urls = null; d.isScraped = false; d.cluster = null; });
+                }
+                this.startScrapeCore(false);
+            },
+
+            async startScrapeCore(onlySelected) {
+                this.state.isRunning = true; this.state.isPaused = false; this.state.currentKeyIdx = 0;
+                this._scrapeErrors = [];
+                this.els.btnStart.innerHTML = '<i class="fa-solid fa-pause"></i> TẠM DỪNG';
+                this.els.btnStart.classList.add('running');
+                this.els.progWrap.style.display = 'flex';
+                this.els.progFill.classList.add('striped');
+                document.getElementById('btnCancelScrape').style.display = 'inline-flex';
+                
+                const gl = this.els.cGl.value, hl = this.els.cHl.value;
+                const batchSize = Math.min(100, Math.max(1, parseInt(this.els.configBatchSize.value) || 50));
+                const batchDelay = parseInt(this.els.configDelay.value) || 0;
+                
+                // ETA tracking
+                const scrapedAtStart = this.data.filter(d => d.isScraped).length;
+                const startTime = Date.now();
+
+                while(this.state.isRunning) {
+                    while(this.state.isPaused && this.state.isRunning) await new Promise(r => setTimeout(r, 500));
+                    if(!this.state.isRunning) break;
+
+                    const pendingIdx = [];
+                    for(let i=0; i<this.data.length; i++) {
+                        if(!this.data[i].isScraped) pendingIdx.push(i);
+                        if(pendingIdx.length === batchSize) break;
+                    }
+
+                    if(pendingIdx.length === 0) {
+                        this.state.isRunning = false;
+                        this.els.btnStart.innerHTML = '<i class="fa-solid fa-play"></i> BẮT ĐẦU CÀO';
+                        this.els.btnStart.classList.remove('running');
+                        this.els.progFill.classList.remove('striped');
+                        document.getElementById('btnCancelScrape').style.display = 'none';
+                        this.els.progFill.style.width = '100%';
+                        this.els.progText.innerText = 'Đang xử lý gom nhóm...';
+                        document.getElementById('keyStatus').innerText = '';
+                        await this.performClustering();
+                        break;
+                    }
+
+                    const payload = pendingIdx.map(idx => ({ q: this.data[idx].keyword, gl, hl, num: 10 }));
+                    const key = this.apiKeys[this.state.currentKeyIdx];
+                    const keyLabel = `Key #${this.state.currentKeyIdx + 1}/${this.apiKeys.length}`;
+                    if(!key) {
+                        this.state.isRunning = false;
+                        this.els.btnStart.innerHTML = '<i class="fa-solid fa-play"></i> BẮT ĐẦU CÀO';
+                        this.els.btnStart.classList.remove('running');
+                        this.els.progFill.classList.remove('striped');
+                        document.getElementById('btnCancelScrape').style.display = 'none';
+                        this.showToast('Hết API Key hợp lệ!', 'triangle-exclamation');
+                        break;
+                    }
+                    document.getElementById('keyStatus').innerText = `[${keyLabel}]`;
+
+                    try {
+                        const res = await fetch('https://google.serper.dev/search', { method: 'POST', headers: { 'X-API-KEY': key, 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                        
+                        if(!res.ok) {
+                            const status = res.status;
+                            if(status === 429) {
+                                this._scrapeErrors.push(`[${new Date().toLocaleTimeString()}] ${keyLabel} rate limited (429) → chuyển key`);
+                                this.state.currentKeyIdx++;
+                                document.getElementById('keyStatus').innerText = `[${keyLabel} rate limit → next key...]`;
+                            } else if(status === 401 || status === 403) {
+                                this._scrapeErrors.push(`[${new Date().toLocaleTimeString()}] ${keyLabel} invalid/expired (${status})`);
+                                this.state.currentKeyIdx++;
+                                this.showToast(`${keyLabel} không hợp lệ (${status})!`, 'triangle-exclamation');
+                            } else {
+                                this._scrapeErrors.push(`[${new Date().toLocaleTimeString()}] ${keyLabel} error ${status}, retrying...`);
+                                await new Promise(r => setTimeout(r, 2000));
+                            }
+                            continue;
+                        }
+                        
+                        const results = await res.json();
+                        const arr = Array.isArray(results) ? results : [results];
+
+                        arr.forEach((r, i) => {
+                            const globalIdx = pendingIdx[i];
+                            const cleanObjects = (r.organic || [])
+                                .filter(o => o.link && !this.blacklist.some(d => o.link.toLowerCase().includes(d)))
+                                .map(o => ({ link: o.link, title: o.title || '', snippet: o.snippet || '' }));
+                            this.data[globalIdx].urls = cleanObjects;
+                            this.data[globalIdx].isScraped = true;
+                            
+                            let transScore = 0; let infoScore = 0;
+                            (r.organic || []).forEach(o => {
+                                const text = ((o.title || '') + ' ' + (o.snippet || '') + ' ' + o.link).toLowerCase();
+                                if (['mua', 'bán', 'giá', 'sản phẩm', 'cửa hàng', 'shop', 'store', 'cart', 'product', 'khuyến mãi', 'báo giá', 'chính hãng', 'danh mục', 'category', 'collection'].some(w => text.includes(w))) transScore++;
+                                if (['là gì', 'hướng dẫn', 'cách', 'tại sao', 'khi nào', 'wiki', 'blog', 'tin tức', 'review', 'đánh giá', 'so sánh', 'kinh nghiệm', 'top', 'tổng hợp', 'hỏi đáp'].some(w => text.includes(w))) infoScore++;
+                            });
+                            
+                            let intent = 'informational';
+                            if (transScore > infoScore && transScore >= 3) intent = 'transactional';
+                            else if (transScore >= 5) intent = 'transactional';
+                            this.data[globalIdx].intent = intent;
+                        });
+
+                        // ETA calculation
+                        const nowScraped = this.data.filter(d => d.isScraped).length;
+                        const elapsed = (Date.now() - startTime) / 1000;
+                        const rate = (nowScraped - scrapedAtStart) / Math.max(elapsed, 1);
+                        const remaining = this.data.filter(d => !d.isScraped).length;
+                        const eta = rate > 0 ? Math.round(remaining / rate) : 0;
+                        const etaStr = eta > 60 ? `~${Math.round(eta/60)}m` : `~${eta}s`;
+                        const pct = Math.round((nowScraped / this.data.length) * 100);
+                        this.els.progFill.style.width = pct + '%';
+                        this.els.progText.innerText = `${nowScraped}/${this.data.length} (${pct}%) — ETA: ${etaStr}`;
+
+                        this.updateStats(); await this.saveState(); this.renderTable();
+                        
+                        // Configurable delay between batches
+                        if(batchDelay > 0) await new Promise(r => setTimeout(r, batchDelay));
+                    } catch(e) { 
+                        this._scrapeErrors.push(`[${new Date().toLocaleTimeString()}] Network error: ${e.message}`);
+                        await new Promise(r => setTimeout(r, 2000)); 
+                    }
+                }
+                
+                if(this._scrapeErrors.length > 0) {
+                    console.warn('Scrape errors:', this._scrapeErrors);
+                }
+            },
+
+            async performClustering() {
+                const thresh = parseInt(this.els.cThresh.value);
+                this.els.progWrap.style.display = 'flex';
+                this.els.progText.innerText = 'Đang gom nhóm...';
+                this.data.forEach(d => d.cluster = null);
+                
+                // Yield to UI before heavy loop
+                await new Promise(r => setTimeout(r, 30));
+                
+                const sorted = [...this.data].sort((a,b) => b.volume - a.volume);
+                const linkSets = new Map();
+                sorted.forEach(d => {
+                    if (d.urls) {
+                        const links = Array.isArray(d.urls) ? d.urls.map(u => typeof u === 'string' ? u : u.link) : Array.from(d.urls);
+                        linkSets.set(d.keyword, new Set(links));
+                    }
+                });
+
+                for(let i=0; i<sorted.length; i++) {
+                    const parent = sorted[i];
+                    if(!parent.isScraped || parent.cluster) continue;
+                    parent.cluster = parent.keyword;
+
+                    for(let j=0; j<sorted.length; j++) {
+                        if(i===j) continue;
+                        const child = sorted[j];
+                        if(!child.cluster && child.isScraped && linkSets.has(child.keyword) && linkSets.has(parent.keyword)) {
+                            let matches = 0;
+                            const pSet = linkSets.get(parent.keyword);
+                            const cSet = linkSets.get(child.keyword);
+                            const [s, l] = pSet.size < cSet.size ? [pSet, cSet] : [cSet, pSet];
+                            for(let u of s) { if(l.has(u)) matches++; if(matches >= thresh) break; }
+                            if(matches >= thresh) child.cluster = parent.keyword;
+                        }
+                    }
+                    // Yield every 50 iterations to avoid UI freeze
+                    if(i % 50 === 0) await new Promise(r => setTimeout(r, 0));
+                }
+
+                const map = {}; sorted.forEach(d => map[d.keyword] = d.cluster);
+                this.data.forEach(d => { if(map[d.keyword]) d.cluster = map[d.keyword]; });
+
+                this.els.progFill.style.width = '100%';
+                this.els.progText.innerText = '✅ Hoàn thành gom nhóm!';
+                await this.saveState(); this.updateStats(); this.renderTable();
+                this.showToast(`Gom nhóm xong! ${new Set(this.data.filter(d=>d.cluster).map(d=>d.cluster)).size} nhóm.`, 'check');
+            },
+
+            clearFilters() {
+                this.els.fSearch.value = '';
+                this.els.fIntent.value = 'all';
+                this.els.fMin.value = 0;
+                this.els.fMax.value = '';
+                this.els.fInc.value = '';
+                this.els.fExc.value = '';
+                if(this.els.fCluster) this.els.fCluster.value = 'all';
+                this.renderTable();
+                this.renderActiveFilters();
+            },
+
+            updateStats() {
+                const total = this.data.length;
+                const scraped = this.data.filter(d => d.isScraped).length;
+                const groups = new Set(this.data.filter(d => d.cluster).map(d=>d.cluster)).size;
+                document.getElementById('statTotal').innerText = total.toLocaleString();
+                document.getElementById('statScraped').innerText = scraped.toLocaleString();
+                document.getElementById('statGroups').innerText = groups.toLocaleString();
+            },
+
+            // --- UI Rendering ---
+            handleSort(col) {
+                if(this.state.sortCol === col) this.state.sortAsc = !this.state.sortAsc;
+                else { this.state.sortCol = col; this.state.sortAsc = false; }
+                this.renderTable();
+            },
+
+            getFilteredData() {
+                const search = this.els.fSearch.value.trim().toLowerCase();
+                const intentFilter = this.els.fIntent.value;
+                const minVol = parseInt(this.els.fMin.value) || 0;
+                const maxVol = parseInt(this.els.fMax.value) || Infinity;
+                const inc = this.els.fInc.value.trim().toLowerCase().split(',').filter(x=>x);
+                const exc = this.els.fExc.value.trim().toLowerCase().split(',').filter(x=>x);
+                const clusterFilter = this.els.fCluster ? this.els.fCluster.value : 'all';
+
+                // Pre-compute cluster sizes for cluster filter
+                const clusterSizes = {};
+                if(clusterFilter !== 'all') {
+                    this.data.forEach(d => {
+                        if(d.cluster) clusterSizes[d.cluster] = (clusterSizes[d.cluster] || 0) + 1;
+                    });
+                }
+
+                return this.data.filter(item => {
+                    const kw = item.keyword.toLowerCase();
+                    if(item.volume < minVol) return false;
+                    if(item.volume > maxVol) return false;
+                    if(search && !kw.includes(search)) return false;
+                    if(intentFilter !== 'all' && item.intent !== intentFilter) return false;
+                    if(inc.length > 0 && !inc.some(i => kw.includes(i.trim()))) return false;
+                    if(exc.length > 0 && exc.some(e => kw.includes(e.trim()))) return false;
+                    
+                    // Cluster size filter
+                    if(clusterFilter !== 'all') {
+                        const size = item.cluster ? (clusterSizes[item.cluster] || 0) : 0;
+                        if(clusterFilter === 'unclustered' && item.cluster) return false;
+                        if(clusterFilter === 'small' && (size < 2 || size > 5)) return false;
+                        if(clusterFilter === 'medium' && (size < 6 || size > 15)) return false;
+                        if(clusterFilter === 'large' && size < 16) return false;
+                    }
+                    return true;
+                });
+            },
+
+            renderTable() {
+                const filtered = this.getFilteredData();
+                const tbody = this.els.tableBody;
+                const searchQuery = this.els.fSearch.value.trim().toLowerCase();
+                const hasActiveFilter = searchQuery || this.els.fIntent.value !== 'all' || this.els.fMin.value != 0 || this.els.fMax.value || this.els.fInc.value || this.els.fExc.value || (this.els.fCluster && this.els.fCluster.value !== 'all');
+                
+                if(filtered.length === 0) {
+                    if(this.data.length === 0) {
+                        // Rich Onboarding Empty State
+                        tbody.innerHTML = `<tr><td colspan="7">
+                            <div style="padding: 48px 32px; text-align: center; max-width: 700px; margin: 0 auto;">
+                                <div style="display: inline-flex; align-items: center; justify-content: center; width: 72px; height: 72px; border-radius: 20px; background: linear-gradient(135deg, rgba(0, 102, 204, 0.15), rgba(139, 92, 246, 0.15)); margin-bottom: 20px;">
+                                    <i class="fa-solid fa-rocket" style="font-size: 32px; background: linear-gradient(135deg, var(--brand-primary), var(--accent-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
+                                </div>
+                                <h2 style="font-size: 20px; font-weight: 700; color: var(--text-main); margin: 0 0 8px 0;">Chào mừng đến SEO Cluster Pro</h2>
+                                <p style="color: var(--text-secondary); font-size: 14px; margin: 0 0 32px 0; max-width: 450px; margin-left: auto; margin-right: auto; line-height: 1.6;">Công cụ gom nhóm từ khóa và tạo dàn ý SEO thông minh. Hãy bắt đầu với 3 bước dưới đây:</p>
+
+                                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; text-align: left;">
+                                    <div style="background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: 16px; padding: 20px; cursor: pointer; transition: all 0.25s ease;" onclick="document.querySelector('[data-modal=modalImport]').click()" onmouseover="this.style.borderColor='var(--brand-primary)';this.style.transform='translateY(-2px)';this.style.boxShadow='var(--shadow-md)'" onmouseout="this.style.borderColor='var(--border-light)';this.style.transform='none';this.style.boxShadow='none'">
+                                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                                            <div style="background: rgba(16, 185, 129, 0.12); color: #10b981; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px;">1</div>
+                                            <span style="font-weight: 700; color: var(--text-main); font-size: 14px;">Nhập dữ liệu</span>
+                                        </div>
+                                        <p style="color: var(--text-secondary); font-size: 12.5px; line-height: 1.5; margin: 0;">Kéo thả file Excel/CSV hoặc nhập thủ công danh sách từ khóa cùng Volume.</p>
+                                        <div style="margin-top: 12px; font-size: 12px; color: var(--brand-primary); font-weight: 600;"><i class="fa-solid fa-arrow-right" style="margin-right: 4px;"></i> Bắt đầu</div>
+                                    </div>
+
+                                    <div style="background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: 16px; padding: 20px; opacity: 0.7;">
+                                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                                            <div style="background: rgba(245, 158, 11, 0.12); color: #f59e0b; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px;">2</div>
+                                            <span style="font-weight: 700; color: var(--text-main); font-size: 14px;">Cào SERP & Gom nhóm</span>
+                                        </div>
+                                        <p style="color: var(--text-secondary); font-size: 12.5px; line-height: 1.5; margin: 0;">Thu thập dữ liệu Google qua Serper API, sau đó tự động gom nhóm theo SERP overlap.</p>
+                                        <div style="margin-top: 12px; font-size: 12px; color: var(--text-muted); font-weight: 500;"><i class="fa-solid fa-lock" style="margin-right: 4px;"></i> Cần nhập dữ liệu trước</div>
+                                    </div>
+
+                                    <div style="background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: 16px; padding: 20px; opacity: 0.7;">
+                                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                                            <div style="background: rgba(139, 92, 246, 0.12); color: #8b5cf6; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px;">3</div>
+                                            <span style="font-weight: 700; color: var(--text-main); font-size: 14px;">Tạo Outline AI</span>
+                                        </div>
+                                        <p style="color: var(--text-secondary); font-size: 12.5px; line-height: 1.5; margin: 0;">Gemini AI phân tích heading đối thủ và tạo dàn ý chuẩn SEO cho từng nhóm.</p>
+                                        <div style="margin-top: 12px; font-size: 12px; color: var(--text-muted); font-weight: 500;"><i class="fa-solid fa-lock" style="margin-right: 4px;"></i> Cần cào SERP trước</div>
+                                    </div>
+                                </div>
+
+                                <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border-light);">
+                                    <p style="color: var(--text-muted); font-size: 12px; margin: 0;"><i class="fa-solid fa-lightbulb" style="color: #f59e0b; margin-right: 6px;"></i> Hoặc bạn có thể <strong style="color: var(--text-main); cursor: pointer;" onclick="document.querySelector('[data-action=import-workspace]').click()">mở một phiên làm việc cũ (.json)</strong> để tiếp tục.</p>
+                                </div>
+                            </div>
+                        </td></tr>`;
+                    } else {
+                        tbody.innerHTML = `<tr><td colspan="7">
+                            <div class="empty-state">
+                                <i class="fa-solid fa-magnifying-glass-chart"></i>
+                                <p>Không tìm thấy kết quả</p>
+                                <span class="hint">Thử điều chỉnh bộ lọc</span>
+                                ${hasActiveFilter ? '<button onclick="app.clearFilters()" style="margin-top:8px;padding:6px 16px;border:1px solid var(--border-light);border-radius:8px;cursor:pointer;background:var(--glass-bg);font-size:12px;font-weight:600;"><i class="fa-solid fa-xmark"></i> Xóa bộ lọc</button>' : ''}
+                            </div>
+                        </td></tr>`;
+                    }
+                    document.getElementById('pageInfo').innerText = '0';
+                    return;
+                }
+
+                // Highlight helper
+                const hl = (text) => {
+                    if(!searchQuery) return text;
+                    const escaped = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    return text.replace(new RegExp(`(${escaped})`, 'gi'), '<mark class="kw-highlight">$1</mark>');
+                };
+
+                // Volume bar with log scale for better distribution
+                const allVols = [];
+                filtered.forEach(d => allVols.push(d.volume));
+                const maxVol = Math.max(...allVols, 1);
+                const logMax = Math.log10(maxVol + 1);
+                const volBarW = (v) => {
+                    if(v <= 0) return 3;
+                    return Math.max(3, Math.round((Math.log10(v + 1) / logMax) * 50));
+                };
+
+                // Group Data
+                const groupsMap = {};
+                const unclustered = [];
+                filtered.forEach(d => {
+                    if(d.cluster) {
+                        if(!groupsMap[d.cluster]) groupsMap[d.cluster] = { vol: 0, items: [] };
+                        groupsMap[d.cluster].items.push(d);
+                        groupsMap[d.cluster].vol += d.volume;
+                    } else { unclustered.push(d); }
+                });
+
+                // Sort groups
+                const renderList = [];
+                const sortCol = this.state.sortCol;
+                const sortAsc = this.state.sortAsc;
+                const sortedParentKeys = Object.keys(groupsMap).sort((a,b) => {
+                    let valA, valB;
+                    if(sortCol === 'volume') { valA = groupsMap[a].vol; valB = groupsMap[b].vol; }
+                    else if(sortCol === 'intent') { const ai = groupsMap[a].items[0]; const bi = groupsMap[b].items[0]; valA = ai?.intent || ''; valB = bi?.intent || ''; }
+                    else { valA = a; valB = b; }
+                    if(valA < valB) return sortAsc ? -1 : 1;
+                    if(valA > valB) return sortAsc ? 1 : -1; return 0;
+                });
+
+                sortedParentKeys.forEach(k => { renderList.push({ isGroup: true, key: k, data: groupsMap[k] }); });
+                
+                // Sort unclustered
+                unclustered.sort((a, b) => {
+                    let valA, valB;
+                    if(sortCol === 'volume') { valA = a.volume; valB = b.volume; }
+                    else if(sortCol === 'intent') { valA = a.intent || ''; valB = b.intent || ''; }
+                    else if(sortCol === 'scraped') { valA = a.isScraped ? 1 : 0; valB = b.isScraped ? 1 : 0; }
+                    else { valA = a.keyword; valB = b.keyword; }
+                    if(valA < valB) return sortAsc ? -1 : 1;
+                    if(valA > valB) return sortAsc ? 1 : -1; return 0;
+                });
+                unclustered.forEach(u => renderList.push({ isGroup: false, key: u.keyword, data: u }));
+
+                document.getElementById('pageInfo').innerText = renderList.length;
+
+                // Intent badge builder
+                const intentBadge = (item) => {
+                    if(!item.isScraped) return '<span style="color:var(--text-muted)">—</span>';
+                    return item.intent === 'transactional' 
+                        ? '<span class="intent-badge intent-trans"><i class="fa-solid fa-cart-shopping"></i> Mua hàng</span>' 
+                        : '<span class="intent-badge intent-info"><i class="fa-solid fa-book-open"></i> Thông tin</span>';
+                };
+                const statusIcon = (item) => item.isScraped 
+                    ? '<i class="fa-solid fa-circle-check" style="color:var(--accent-green);font-size:12px;" title="Đã thu thập SERP"></i>' 
+                    : '<i class="fa-regular fa-circle" style="color:var(--text-muted);font-size:12px;" title="Chưa thu thập SERP"></i>';
+
+                // Build HTML
+                const parts = [];
+
+                const buildChildRow = (item, isMain, groupKey) => {
+                    const isChecked = this.state.selectedKeys.has(item.keyword) ? 'checked' : '';
+                    const urlCount = item.urls ? item.urls.length : 0;
+                    const urlsHtml = urlCount > 0 ? `<span class="font-mono" style="font-size:11px;">${urlCount}</span>` : '<span style="color:var(--text-muted)">—</span>';
+                    let actionHtml = item.isScraped ? `<button class="btn btn-ghost" style="padding:3px 6px;font-size:11px;" onclick="app.showUrls('${item.keyword.replace(/'/g, "\\'")}')" title="Xem URLs"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>` : '';
+                    if (isMain && item.isScraped) actionHtml += `<button class="btn btn-ghost" style="padding:3px 6px;font-size:11px;color:var(--accent-purple);" onclick="app.generateOutline('${item.keyword.replace(/'/g, "\\'")}')" title="Tạo Outline AI"><i class="fa-solid fa-wand-magic-sparkles"></i></button>`;
+                    const bw = volBarW(item.volume);
+
+                    return `<tr class="cluster-child ${isMain ? 'is-main' : ''}" data-group="${groupKey}">
+                        <td class="col-cb"><input type="checkbox" class="row-cb" data-key="${item.keyword}" ${isChecked}></td>
+                        <td><span class="child-kw"><span class="child-dot"></span>${hl(item.keyword)}</span></td>
+                        <td class="font-mono" style="text-align:right;"><span class="vol-bar"><span class="vol-fill" style="width:${bw}px"></span>${item.volume.toLocaleString()}</span></td>
+                        <td>${intentBadge(item)}</td>
+                        <td style="text-align:center;">${urlsHtml}</td>
+                        <td style="text-align:center;">${statusIcon(item)}</td>
+                        <td style="text-align:right;">${actionHtml}</td>
+                    </tr>`;
+                };
+
+                const buildUnclusteredRow = (item) => {
+                    const isChecked = this.state.selectedKeys.has(item.keyword) ? 'checked' : '';
+                    const urlCount = item.urls ? item.urls.length : 0;
+                    const urlsHtml = urlCount > 0 ? `<span class="font-mono" style="font-size:11px;">${urlCount}</span>` : '<span style="color:var(--text-muted)">—</span>';
+                    let actionHtml = item.isScraped ? `<button class="btn btn-ghost" style="padding:3px 6px;font-size:11px;" onclick="app.showUrls('${item.keyword.replace(/'/g, "\\'")}')" title="Xem URLs"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>` : '';
+                    const bw = volBarW(item.volume);
+
+                    return `<tr class="unclustered-row" data-group="${item.keyword}">
+                        <td class="col-cb"><input type="checkbox" class="row-cb" data-key="${item.keyword}" ${isChecked}></td>
+                        <td>${hl(item.keyword)}</td>
+                        <td class="font-mono" style="text-align:right;"><span class="vol-bar"><span class="vol-fill" style="width:${bw}px"></span>${item.volume.toLocaleString()}</span></td>
+                        <td>${intentBadge(item)}</td>
+                        <td style="text-align:center;">${urlsHtml}</td>
+                        <td style="text-align:center;">${statusIcon(item)}</td>
+                        <td style="text-align:right;">${actionHtml}</td>
+                    </tr>`;
+                };
+
+                renderList.forEach(pi => {
+                    if(pi.isGroup) {
+                        const allItems = pi.data.items.sort((a,b) => b.volume - a.volume);
+                        const mainKw = pi.key;
+                        const isExpanded = this.state.expandedGroups.has(mainKw);
+                        const bw = volBarW(pi.data.vol);
+                        const count = allItems.length;
+
+                        // Cluster size class
+                        const sizeClass = count >= 16 ? 'cluster-xl' : count >= 6 ? 'cluster-md' : 'cluster-sm';
+
+                        // Group Intent (representative: intent of the keyword with highest volume)
+                        let groupIntentHtml = '';
+                        if(allItems.length > 0 && allItems[0].isScraped) {
+                            groupIntentHtml = intentBadge(allItems[0]);
+                        }
+
+                        const mainItem = allItems.find(i => i.keyword === mainKw) || allItems[0];
+                        const hasOutline = !!mainItem.outlineCache;
+                        const outlineIcon = hasOutline ? '<i class="fa-solid fa-check"></i> Đã tạo' : '<i class="fa-solid fa-wand-magic-sparkles"></i> Outline';
+                        const outlineBtnStyle = hasOutline 
+                            ? "padding:4px 8px;font-size:10px; border-radius: 6px; background: rgba(16, 185, 129, 0.15); color: #10b981; font-weight: 600;" 
+                            : "padding:4px 8px;font-size:10px; border-radius: 6px; color:var(--accent-purple); border: 1px solid rgba(139, 92, 246, 0.3); font-weight: 600;";
+
+                        parts.push(`<tr class="cluster-parent ${sizeClass}" data-group="${mainKw}">
+                            <td class="col-cb"><input type="checkbox" class="row-cb" data-key="${mainKw}" ${this.state.selectedKeys.has(mainKw) ? 'checked' : ''}></td>
+                            <td><span class="kw-toggle" data-group="${mainKw}"><i class="fa-solid fa-chevron-right kw-chevron ${isExpanded ? 'expanded' : ''}"></i><span class="kw-text">${hl(mainKw)}</span><span class="kw-count">${count} từ khóa</span></span></td>
+                            <td class="font-mono kw-vol-total" style="text-align:right;"><span class="vol-bar"><span class="vol-fill" style="width:${bw}px"></span>${pi.data.vol.toLocaleString()}</span></td>
+                            <td style="text-align:center;">${groupIntentHtml}</td>
+                            <td></td>
+                            <td></td>
+                            <td style="text-align:right;"><button class="btn btn-ghost" style="${outlineBtnStyle}" onclick="app.generateOutline('${mainKw.replace(/'/g, "\\'")}')" title="${hasOutline ? 'Đã có Outline. Nhấn để xem lại' : 'Tạo Outline AI'}">${outlineIcon}</button></td>
+                        </tr>`);
+
+                        if(isExpanded) {
+                            allItems.forEach(item => {
+                                parts.push(buildChildRow(item, item.keyword === mainKw, mainKw));
+                            });
+                        }
+                    } else {
+                        parts.push(buildUnclusteredRow(pi.data));
+                    }
+                });
+
+                tbody.innerHTML = parts.join('');
+            },
+
+            showUrls(keyword) {
+                const item = this.data.find(d => d.keyword === keyword);
+                if(!item || !item.urls) return;
+                
+                const gUrl = `https://www.google.com/search?q=${encodeURIComponent(keyword)}`;
+                document.getElementById('modalUrlTitle').innerHTML = `URLs của "${keyword}" <a href="${gUrl}" target="_blank" class="btn btn-ghost" style="padding: 4px 8px; font-size: 11px; margin-left: 8px;"><i class="fa-brands fa-google"></i> Xem Google</a>`;
+                
+                let html = '<div class="flex-col gap-4">';
+                const urlsArr = Array.isArray(item.urls) ? item.urls : Array.from(item.urls);
+                urlsArr.forEach((u, i) => {
+                    if (typeof u === 'string') {
+                        html += `<div class="flex gap-2 text-xs" style="border-bottom: 1px solid var(--glass-border); padding-bottom: 12px;"><span class="font-mono text-muted">${i+1}.</span><a href="${u}" target="_blank" style="color: var(--accent-blue); text-decoration: none; word-break: break-all;">${u}</a></div>`;
+                    } else {
+                        html += `
+                        <div style="border-bottom: 1px solid var(--glass-border); padding-bottom: 12px;">
+                            <div class="flex gap-2">
+                                <span class="font-mono text-muted" style="margin-top:2px;">${i+1}.</span>
+                                <div style="flex:1;">
+                                    <div style="font-size: 11px; color: var(--text-secondary); word-break: break-all; margin-bottom: 2px;">${u.link}</div>
+                                    <a href="${u.link}" target="_blank" style="color: var(--brand-primary); text-decoration: none; font-size: 15px; font-weight: 500; display: block; margin-bottom: 4px;">${u.title || u.link}</a>
+                                    <div style="font-size: 12.5px; color: var(--text-main); line-height: 1.5; opacity: 0.9;">${u.snippet || ''}</div>
+                                </div>
+                            </div>
+                        </div>`;
+                    }
+                });
+                document.getElementById('modalUrlBody').innerHTML = html + '</div>';
+                document.getElementById('modalUrl').classList.add('active');
+            },
+
+            // --- AI Features ---
+            async callGeminiAPI(prompt) {
+                const key = this.els.geminiKey.value.trim(); const model = this.els.geminiModel.value;
+                if(!key) throw new Error('Vui lòng nhập Gemini API Key trong phần Cấu Hình.');
+                const payload = {
+                    contents: [{ role: "user", parts: [{ text: prompt }] }],
+                    generationConfig: { temperature: 0.7, maxOutputTokens: 4096 }
+                };
+                if(this.els.gOptThinking.checked) {
+                    payload.generationConfig.thinkingConfig = { thinkingLevel: "HIGH" };
+                    delete payload.generationConfig.temperature;
+                }
+                if(this.els.gOptSearch.checked) {
+                    payload.tools = [{ googleSearch: {} }];
+                }
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if(!res.ok) { const err = await res.json(); throw new Error(err.error?.message || 'Lỗi kết nối Gemini API.'); }
+                const data = await res.json(); return data.candidates[0].content.parts[0].text;
+            },
+
+            async callGeminiStreaming(prompt, targetEl) {
+                const key = this.els.geminiKey.value.trim(); const model = this.els.geminiModel.value;
+                if(!key) throw new Error('Vui lòng nhập Gemini API Key trong phần Cấu Hình.');
+                const payload = {
+                    contents: [{ role: "user", parts: [{ text: prompt }] }],
+                    generationConfig: { temperature: 0.7, maxOutputTokens: 4096 }
+                };
+                if(this.els.gOptThinking.checked) {
+                    payload.generationConfig.thinkingConfig = { thinkingLevel: "HIGH" };
+                    delete payload.generationConfig.temperature;
+                }
+                if(this.els.gOptSearch.checked) payload.tools = [{ googleSearch: {} }];
+
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${key}`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if(!res.ok) { const err = await res.json(); throw new Error(err.error?.message || 'Lỗi kết nối Gemini API.'); }
+
+                const reader = res.body.getReader();
+                const decoder = new TextDecoder();
+                let fullText = '';
+                let buffer = '';
+
+                while(true) {
+                    const { done, value } = await reader.read();
+                    if(done) break;
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop() || '';
+                    for(const line of lines) {
+                        if(line.startsWith('data: ')) {
+                            try {
+                                const json = JSON.parse(line.slice(6));
+                                const parts = json.candidates?.[0]?.content?.parts;
+                                if(parts) {
+                                    for(const p of parts) {
+                                        if(p.text) { fullText += p.text; targetEl.innerHTML = marked.parse(fullText); }
+                                    }
+                                }
+                            } catch(e) {}
+                        }
+                    }
+                }
+                return fullText;
+            },
+
+            async scrapeHeadingsFromUrls(urls, onProgress) {
+                const jinaUrl = 'https://r.jina.ai/';
+                let completed = 0;
+
+                // Danh sách heading thường gặp ở sidebar/nav/footer cần loại bỏ
+                const noisePatterns = [
+                    /^(menu|navigation|sidebar|footer|header|widget|breadcrumb|related|popular|trending|recent|archive|category|tag|comment|share|social|subscribe|newsletter|copyright|about us|contact|privacy|disclaimer|terms|sitemap|search|login|register|sign up|sign in|cart|checkout|faq$)/i,
+                    /^(bài viết|tin tức|chuyên mục|liên hệ|giới thiệu|đăng nhập|đăng ký|tìm kiếm|giỏ hàng|thanh toán|điều khoản|chính sách|bảo mật|mục lục|chia sẻ|bình luận|xem thêm|có thể bạn|bạn đọc|đọc nhiều|nổi bật|mới nhất|cùng chuyên|tags?$)/i,
+                    /^\d+\.?\s*$/,
+                    /^(home|trang chủ|back to|go to|skip to|jump to)/i
+                ];
+                const isNoise = (text) => noisePatterns.some(p => p.test(text.trim()));
+                
+                const fetchUrl = async (url) => {
+                    try {
+                        const res = await fetch(jinaUrl + url, { headers: { 'Accept': 'text/plain' } });
+                        if(!res.ok) return null;
+                        const markdown = await res.text();
+                        if(!markdown) return null;
+                        
+                        const lines = markdown.split('\n');
+                        let allHeadings = [];
+                        let h1Found = false;
+                        let contentStarted = false;
+                        let consecutiveNonHeading = 0;
+                        
+                        for(let line of lines) {
+                            line = line.trim();
+                            if(line.startsWith('#')) {
+                                const match = line.match(/^(#{1,3})\s+(.*)/);
+                                if(match) {
+                                    const hLevel = match[1].length;
+                                    const cleanText = match[2].replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/\*/g, '').trim();
+                                    
+                                    if(cleanText.length <= 5 || cleanText.length >= 150) continue;
+                                    if(isNoise(cleanText)) continue;
+                                    
+                                    // Đánh dấu bắt đầu nội dung chính khi gặp H1 đầu tiên
+                                    if(hLevel === 1 && !h1Found) {
+                                        h1Found = true;
+                                        contentStarted = true;
+                                    }
+                                    
+                                    if(contentStarted) {
+                                        allHeadings.push({ level: hLevel, text: cleanText });
+                                        consecutiveNonHeading = 0;
+                                    }
+                                }
+                            } else if(contentStarted && line.length > 0) {
+                                consecutiveNonHeading++;
+                            }
+                        }
+                        
+                        // Nếu không tìm thấy H1, lấy tất cả heading đã lọc noise
+                        if(!h1Found && allHeadings.length === 0) {
+                            for(let line of lines) {
+                                line = line.trim();
+                                if(line.startsWith('#')) {
+                                    const match = line.match(/^(#{1,3})\s+(.*)/);
+                                    if(match) {
+                                        const cleanText = match[2].replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/\*/g, '').trim();
+                                        if(cleanText.length > 5 && cleanText.length < 150 && !isNoise(cleanText)) {
+                                            allHeadings.push({ level: match[1].length, text: cleanText });
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        if(allHeadings.length === 0) return null;
+                        
+                        let domain = url; try { domain = new URL(url).hostname.replace('www.',''); } catch(e){}
+                        let result = `--- ${domain} ---\n`;
+                        allHeadings.forEach(h => { result += `  ${'  '.repeat(h.level - 1)}[H${h.level}] ${h.text}\n`; });
+                        return result + '\n';
+                    } catch(e) {
+                        return null;
+                    } finally {
+                        completed++;
+                        if(onProgress) onProgress(completed, urls.length, url);
+                    }
+                };
+
+                // Chạy đồng thời theo từng nhóm 3 URLs để tăng tốc độ nhưng không bị rate limit
+                let allResults = [];
+                for(let i=0; i<urls.length; i+=3) {
+                    const chunk = urls.slice(i, i+3);
+                    const results = await Promise.all(chunk.map(fetchUrl));
+                    allResults.push(...results);
+                }
+                
+                return allResults.filter(r => r).join('');
+            },
+
+            saveQuickSerperKey() {
+                const val = document.getElementById('quickSerperKey').value.trim();
+                if(val) {
+                    this.els.apiKeysInput.value = val;
+                    this.saveConfigAndClose();
+                    document.getElementById('quickSerperSetup').style.display = 'none';
+                    this.showToast('Đã lưu Serper API Key', 'check');
+                }
+            },
+
+            saveQuickGeminiKey(keyword) {
+                const val = document.getElementById('quickGeminiKey').value.trim();
+                if(val) {
+                    this.els.geminiKey.value = val;
+                    this.saveConfigAndClose();
+                    this.generateOutline(keyword, true);
+                }
+            },
+
+            async generateBatchOutline() {
+                // Tìm các nhóm cluster được chọn (lấy keyword đại diện của nhóm)
+                const selectedKeys = [...this.state.selectedKeys];
+                const clusterParents = [];
+                for(const key of selectedKeys) {
+                    const item = this.data.find(d => d.keyword === key);
+                    if(!item) continue;
+                    const parentKw = item.cluster || item.keyword;
+                    if(!clusterParents.includes(parentKw)) {
+                        const parentItem = this.data.find(d => d.keyword === parentKw);
+                        if(parentItem && parentItem.urls && parentItem.urls.length > 0) {
+                            clusterParents.push(parentKw);
+                        }
+                    }
+                }
+
+                if(clusterParents.length === 0) {
+                    this.showToast('Các nhóm được chọn chưa có dữ liệu SERP!', 'triangle-exclamation');
+                    return;
+                }
+
+                const geminiKey = this.els.geminiKey.value.trim();
+                if(!geminiKey) {
+                    this.showToast('Vui lòng nhập Gemini API Key trong Cấu Hình trước!', 'triangle-exclamation');
+                    return;
+                }
+
+                // Giấu FAB, hiện modal với báo cáo batch
+                document.getElementById('modalBatchTitle').innerHTML = `<i class="fa-solid fa-layer-group"></i> Batch Outline Generator (${clusterParents.length} nhóm)`;
+                const batchBody = document.getElementById('modalBatchBody');
+                batchBody.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px;">
+                        <div style="background: rgba(139, 92, 246, 0.1); width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i class="fa-solid fa-layer-group" style="color: var(--accent-purple); font-size: 20px;"></i>
+                        </div>
+                        <div>
+                            <div style="font-weight: 600; font-size: 15px;">Tiến trình xử lý Batch</div>
+                            <div class="text-xs text-muted">Đang xử lý ${clusterParents.length} nhóm từ khóa. Mỗi nhóm sẽ được quét heading và tạo outline tuần tự.</div>
+                        </div>
+                    </div>
+                    <div id="batchProgressList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+                `;
+                document.getElementById('modalBatchOutline').classList.add('active');
+
+                const progressList = document.getElementById('batchProgressList');
+
+                for(let i = 0; i < clusterParents.length; i++) {
+                    const kw = clusterParents[i];
+                    const item = this.data.find(d => d.keyword === kw);
+                    if(!item) continue;
+
+                    // Tạo row hiển thị tiến độ
+                    const rowId = 'batch-row-' + i;
+                    progressList.innerHTML += `
+                        <div id="${rowId}" style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-radius: 10px; border: 1px solid var(--border-light); background: var(--bg-surface); transition: all 0.3s ease;">
+                            <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
+                                <span id="${rowId}-icon" style="font-size: 16px; width: 24px; text-align: center;"><i class="fa-solid fa-circle-notch fa-spin" style="color: var(--accent-purple);"></i></span>
+                                <div style="flex: 1;">
+                                    <div style="font-weight: 600; font-size: 13px;">${kw}</div>
+                                    <div id="${rowId}-status" class="text-xs text-muted">Chờ xử lý...</div>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div id="${rowId}-actions" style="display: none;">
+                                    <button class="btn btn-outline btn-sm" style="padding: 4px 12px; font-size: 12px;" onclick="app.generateOutline('${kw.replace(/'/g, "\\'")}', false)">Xem Outline</button>
+                                </div>
+                                <span id="${rowId}-badge" class="text-xs font-mono" style="padding: 3px 8px; border-radius: 6px; background: var(--bg-hover); color: var(--text-muted);">${i+1}/${clusterParents.length}</span>
+                            </div>
+                        </div>
+                    `;
+
+                    // Activate row
+                    const rowEl = document.getElementById(rowId);
+                    const statusEl = document.getElementById(rowId + '-status');
+                    const iconEl = document.getElementById(rowId + '-icon');
+                    const badgeEl = document.getElementById(rowId + '-badge');
+                    const actionsEl = document.getElementById(rowId + '-actions');
+                    
+                    rowEl.style.borderColor = 'rgba(139, 92, 246, 0.4)';
+                    statusEl.innerText = 'Đang quét heading đối thủ...';
+
+                    try {
+                        // Bước 1: Quét heading
+                        let urlsToScrape = item.urls.map(u => typeof u === 'string' ? u : u.link).slice(0, 10);
+                        let headingsData;
+                        if(item.headingsCache) {
+                            headingsData = item.headingsCache;
+                            statusEl.innerText = 'Đã có heading cache. Đang tạo Outline...';
+                        } else {
+                            headingsData = await this.scrapeHeadingsFromUrls(urlsToScrape);
+                            if(!headingsData) headingsData = '(Không lấy được Heading nào)';
+                            item.headingsCache = headingsData;
+                            this.saveState();
+                            statusEl.innerText = 'Đã quét xong heading. Đang tạo Outline AI...';
+                        }
+
+                        // Bước 2: Gọi AI tạo outline
+                        let clusterContext = '';
+                        if(item.cluster) {
+                            const siblings = this.data.filter(d => d.cluster === item.cluster && d.keyword !== kw)
+                                .sort((a,b) => b.volume - a.volume).slice(0, 15);
+                            if(siblings.length > 0) {
+                                clusterContext = `\nTừ khóa phụ cùng nhóm:\n${siblings.map(s => `- "${s.keyword}" (Vol: ${s.volume})`).join('\n')}\n`;
+                            }
+                        }
+
+                        const serpContext = item.urls.slice(0, 5).map((u, idx) => {
+                            const obj = typeof u === 'string' ? { link: u } : u;
+                            return `${idx+1}. "${obj.title || ''}" \u2014 ${obj.snippet || ''}`;
+                        }).join('\n');
+
+                        const prompt = `BẠN LÀ CHUYÊN GIA SEO ON-PAGE. CHỈ TRẢ VỀ KẾT QUẢ ĐÚNG FORMAT MARKDOWN TIẾNG VIỆT. KHÔNG CHÀO HỎI.\n\nTừ khóa: "${kw}" (Vol: ${item.volume}).${clusterContext}\nTop SERP:\n${serpContext}\nHeading đối thủ:\n${headingsData}\n\nYêu cầu: Phân tích Search Intent, đề xuất H1 tự nhiên, lập dàn ý H2/H3 CHỌN LỌC (5-8 H2, KHÔNG gom hết đối thủ, chỉ lấy góc nhìn cần thiết), 3-5 FAQ. Outline phải TỐT HƠN đối thủ, súc tích, đúng intent.`;
+
+                        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${this.els.geminiModel.value}:generateContent?key=${geminiKey}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                contents: [{ parts: [{ text: prompt }] }],
+                                generationConfig: { maxOutputTokens: 4096 }
+                            })
+                        });
+
+                        if(!res.ok) throw new Error(`API Error ${res.status}`);
+                        const json = await res.json();
+                        const md = json.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                        item.outlineCache = md;
+                        this.saveState();
+
+                        // Done
+                        iconEl.innerHTML = '<i class="fa-solid fa-circle-check" style="color: #10b981;"></i>';
+                        statusEl.innerHTML = '<span style="color: #10b981; font-weight: 500;">✓ Hoàn tất</span>';
+                        badgeEl.style.background = 'rgba(16, 185, 129, 0.15)';
+                        badgeEl.style.color = '#10b981';
+                        rowEl.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+                        actionsEl.style.display = 'block';
+
+                    } catch(e) {
+                        iconEl.innerHTML = '<i class="fa-solid fa-circle-xmark" style="color: #ef4444;"></i>';
+                        statusEl.innerHTML = `<span style="color: #ef4444;">Lỗi: ${e.message}</span>`;
+                        badgeEl.style.background = 'rgba(239, 68, 68, 0.15)';
+                        badgeEl.style.color = '#ef4444';
+                        rowEl.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                    }
+                }
+
+                this.renderTable();
+                this.showToast(`Đã tạo Outline cho ${clusterParents.length} nhóm từ khóa!`, 'check');
+            },
+
+            openOutlineManager() {
+                const listEl = document.getElementById('outlineManagerList');
+                listEl.innerHTML = '';
+                
+                const itemsWithOutline = this.data.filter(d => d.outlineCache && (d.keyword === d.cluster || !d.cluster));
+                
+                if(itemsWithOutline.length === 0) {
+                    listEl.innerHTML = `
+                        <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+                            <i class="fa-solid fa-folder-open fa-3x" style="margin-bottom: 16px; opacity: 0.5;"></i>
+                            <div style="font-size: 15px; font-weight: 500;">Chưa có Outline nào</div>
+                            <div style="font-size: 13px; margin-top: 8px;">Hãy gom nhóm từ khóa, cào SERP và sử dụng tính năng Tạo Outline.</div>
+                        </div>
+                    `;
+                } else {
+                    itemsWithOutline.forEach(item => {
+                        listEl.innerHTML += `
+                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: 12px; cursor: pointer; transition: all 0.2s ease;" class="hover:border-primary" onclick="app.generateOutline('${item.keyword.replace(/'/g, "\\'")}', false)">
+                                <div style="display: flex; align-items: center; gap: 16px;">
+                                    <div style="background: rgba(168, 85, 247, 0.1); color: var(--accent-purple); width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fa-solid fa-file-lines"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 600; font-size: 14px; color: var(--text-main); margin-bottom: 4px;">${item.keyword}</div>
+                                        <div style="display: flex; gap: 12px; font-size: 12px; color: var(--text-secondary);">
+                                            <span><i class="fa-solid fa-chart-simple"></i> Vol: ${item.volume}</span>
+                                            <span><i class="fa-solid fa-layer-group"></i> ${this.data.filter(c => c.cluster === item.keyword).length} Keyword</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <i class="fa-solid fa-chevron-right" style="color: var(--border-hover);"></i>
+                            </div>
+                        `;
+                    });
+                }
+                
+                document.getElementById('modalOutlineManager').classList.add('active');
+            },
+
+            async generateOutline(keyword, force = false) {
+                const item = this.data.find(d => d.keyword === keyword);
+                if(!item || !item.urls || item.urls.length === 0) { this.showToast('Chưa có dữ liệu SERP cho từ khóa này!', 'triangle-exclamation'); return; }
+                
+                document.getElementById('modalAITitle').innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> Tạo Outline: ${keyword}`;
+                document.getElementById('modalAIStatus').innerText = this.els.geminiModel.value;
+                const btnForce = document.getElementById('btnForceAI');
+                btnForce.style.display = 'inline-flex';
+                btnForce.onclick = () => this.generateOutline(keyword, true);
+                
+                if(item.outlineCache && !force) {
+                    const headingsHtml = item.headingsCache ? `
+                        <div style="flex: 0 0 360px; border-left: 1px solid var(--border-light); display: flex; flex-direction: column; height: 100%;">
+                            <h4 style="margin:0; font-size:13px; font-weight: 600; color:var(--text-main); display:flex; align-items:center; gap:8px; padding: 16px 20px; border-bottom: 1px solid var(--border-light); flex-shrink: 0;"><i class="fa-solid fa-spider" style="color:var(--brand-primary);"></i> Heading Đối thủ (Tham khảo)</h4>
+                            <pre style="flex:1; font-family: 'JetBrains Mono', monospace; font-size:11px; line-height:1.7; color:var(--text-secondary); padding:16px 20px; overflow-y:auto; margin:0; white-space: pre-wrap;">${item.headingsCache.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
+                        </div>` : '';
+
+                    document.getElementById('modalAIBody').innerHTML = `
+                        <div style="display: flex; height: 100%;">
+                            <div id="aiEditableContent" contenteditable="true" style="flex: 1; overflow-y: auto; padding: 24px 32px; outline: none; cursor: text;" class="prose">
+                                ${marked.parse(item.outlineCache)}
+                            </div>
+                            ${headingsHtml}
+                        </div>
+                    `;
+                    document.getElementById('modalAI').classList.add('active');
+                    return;
+                }
+
+                const aiBody = document.getElementById('modalAIBody');
+                aiBody.innerHTML = '<div class="ai-skeleton"><div class="ai-skeleton-line"></div><div class="ai-skeleton-line"></div><div class="ai-skeleton-line"></div><div class="ai-skeleton-line"></div><div class="ai-skeleton-line"></div></div><p id="scrapeProgressText" style="text-align:center;color:var(--text-muted);font-size:12px;margin-top:16px;">Đang quét Heading từ đối thủ...</p>';
+                document.getElementById('modalAI').classList.add('active');
+                
+
+
+                let urlsToScrape = item.urls.map(u => typeof u === 'string' ? u : u.link).slice(0, 10);
+                
+                let headingsData;
+                if(item.headingsCache && !force) {
+                    headingsData = item.headingsCache;
+                } else {
+                    const onProgress = (current, total, url) => {
+                        const el = document.getElementById('scrapeProgressText');
+                        if(el) {
+                            try {
+                                const domain = new URL(url).hostname.replace('www.','');
+                                el.innerHTML = `Đang quét Heading <span style="font-weight: 600; color: var(--text-main);">(${current}/${total})</span><br><span style="color:var(--brand-primary); font-weight: 500;">${domain}</span>`;
+                            } catch(e) {
+                                el.innerHTML = `Đang quét Heading (${current}/${total})...`;
+                            }
+                        }
+                    };
+
+                    headingsData = await this.scrapeHeadingsFromUrls(urlsToScrape, onProgress);
+                    if(!headingsData) headingsData = "(Không lấy được Heading nào)\n" + urlsToScrape.join('\n');
+                    
+                    item.headingsCache = headingsData;
+                    this.saveState();
+                }
+
+                // Pre-check: Gemini key available?
+                const geminiKey = this.els.geminiKey.value.trim();
+                if(!geminiKey) {
+                    aiBody.innerHTML = `
+                        <div style="padding: 24px;">
+                            <div style="background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 16px; padding: 20px; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); backdrop-filter: blur(10px);">
+                                <div style="display: flex; align-items: flex-start; gap: 16px;">
+                                    <div style="background: rgba(239, 68, 68, 0.1); width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                        <i class="fa-solid fa-key" style="color: #ef4444; font-size: 18px;"></i>
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <h3 style="color: #ef4444; font-weight: 600; margin: 0 0 8px 0; font-size: 15px;">Chưa cấu hình Gemini API Key</h3>
+                                        <p style="color: var(--text-secondary); font-size: 13px; line-height: 1.5; margin: 0 0 16px 0;">Vui lòng nhập Gemini API Key để tạo Outline AI. (Có thể lấy miễn phí tại Google AI Studio).</p>
+                                        <div style="display: flex; gap: 8px; align-items: center;">
+                                            <input type="password" id="quickGeminiKey" class="input-base font-mono" placeholder="Nhập API Key vào đây..." style="flex: 1; max-width: 350px;">
+                                            <button class="btn btn-primary" onclick="app.saveQuickGeminiKey('${keyword.replace(/'/g, "\\'")}')"><i class="fa-solid fa-check"></i> Lưu & Tạo Outline</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div style="border-top: 1px solid var(--border-light); padding-top: 24px;">
+                                <h4 style="color: var(--text-main); font-size: 14px; font-weight: 600; margin: 0 0 12px 0; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-spider" style="color: var(--accent-purple);"></i> Dữ liệu Đối thủ đã thu thập (${urlsToScrape.length} URLs)</h4>
+                                <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 12px;">Dưới đây là cấu trúc Heading thực tế lấy từ các bài viết đang Top trên Google. Bạn có thể tự tham khảo để lên dàn ý.</p>
+                                <div style="background: #0f1115; border: 1px solid var(--border-light); border-radius: 12px; overflow: hidden; box-shadow: inset 0 2px 8px rgba(0,0,0,0.2);">
+                                    <pre style="font-family: 'JetBrains Mono', Consolas, monospace; font-size: 12px; line-height: 1.6; white-space: pre-wrap; padding: 16px; margin: 0; max-height: 400px; overflow-y: auto; color: #e2e8f0;">${headingsData.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
+                                </div>
+                            </div>
+                        </div>`;
+                    return;
+                }
+
+                const headingsHtml = headingsData ? `
+                    <div style="flex: 0 0 360px; border-left: 1px solid var(--border-light); display: flex; flex-direction: column; height: 100%;">
+                        <h4 style="margin:0; font-size:13px; font-weight: 600; color:var(--text-main); display:flex; align-items:center; gap:8px; padding: 16px 20px; border-bottom: 1px solid var(--border-light); flex-shrink: 0;"><i class="fa-solid fa-spider" style="color:var(--brand-primary);"></i> Heading Đối thủ (Tham khảo)</h4>
+                        <pre style="flex:1; font-family: 'JetBrains Mono', monospace; font-size:11px; line-height:1.7; color:var(--text-secondary); padding:16px 20px; overflow-y:auto; margin:0; white-space: pre-wrap;">${headingsData.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
+                    </div>` : '';
+
+                aiBody.innerHTML = `
+                    <div style="display: flex; height: 100%;">
+                        <div id="aiStreamContainer" style="flex: 1; overflow-y: auto; padding: 24px 32px;" class="prose">
+                            <div style="text-align:center; padding: 40px; color: var(--text-muted);"><i class="fa-solid fa-circle-notch fa-spin fa-2x" style="margin-bottom:16px;"></i><p style="font-size:14px; font-weight:500;">AI đang phân tích và tạo Outline...</p><p style="font-size:12px; margin-top:8px;">Dựa trên dữ liệu SERP thực tế của đối thủ</p></div>
+                        </div>
+                        ${headingsHtml}
+                    </div>
+                `;
+
+                const streamTarget = document.getElementById('aiStreamContainer');
+
+                // --- PROMPT SEO (1 keyword only, compact) ---
+                const serpContext = item.urls.slice(0, 5).map((u, i) => {
+                    const obj = typeof u === 'string' ? { link: u } : u;
+                    return `${i+1}. "${obj.title || ''}" — ${obj.snippet || ''}`;
+                }).join('\n');
+
+                // Giới hạn headingsData để tránh vượt token limit
+                const headingsTrimmed = headingsData.length > 3000
+                    ? headingsData.slice(0, 3000) + '\n...(đã cắt bớt)'
+                    : headingsData;
+
+                const prompt = `Bạn là chuyên gia SEO On-Page. CHỈ trả về Markdown. KHÔNG chào hỏi, KHÔNG giải thích ngoài format.
+
+Từ khóa: "${keyword}" (Vol: ${item.volume})
+
+Top SERP:
+${serpContext}
+
+Heading đối thủ (tham khảo):
+${headingsTrimmed}
+
+Yêu cầu:
+1. Dòng đầu: **🎯 Search Intent:** [loại] — [mô tả ngắn]
+2. Dòng hai: **📝 Content Format:** [loại]
+3. H1 tự nhiên chứa keyword
+4. 5-8 mục H2 chọn lọc (mỗi H2 có 0-3 H3 nếu cần thiết)
+5. Mục FAQ cuối gồm 3-5 câu hỏi dạng H3 + trả lời 1 câu
+
+QUY TẮC BẮT BUỘC:
+- H2 dùng ## (hai dấu #)
+- H3 dùng ### (ba dấu #)
+- Ghi chú (H2) hoặc (H3) NGAY SAU mỗi heading để làm rõ cấp độ
+- Ví dụ: ## Cách thực hiện (H2) | ### Bước 1: Chuẩn bị (H3)
+- KHÔNG copy nguyên heading đối thủ, chỉ lấy ý
+- Outline phải súc tích, đúng intent, không lan man`;
+
+                try { 
+                    const md = await this.callGeminiStreaming(prompt, streamTarget);
+                    // Sau khi stream xong, chuyển container sang editable
+                    streamTarget.setAttribute('contenteditable', 'true');
+                    streamTarget.id = 'aiEditableContent';
+                    streamTarget.style.cursor = 'text';
+                    streamTarget.style.outline = 'none'; 
+                    item.outlineCache = md;
+                    this.saveState();
+                    this.renderTable();
+                } 
+                catch(e) { 
+                    // Show error + crawled headings as fallback
+                    aiBody.innerHTML = `
+                        <div style="padding: 24px;">
+                            <div style="background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 16px; padding: 20px; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); backdrop-filter: blur(10px);">
+                                <div style="display: flex; align-items: flex-start; gap: 16px;">
+                                    <div style="background: rgba(239, 68, 68, 0.1); width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                        <i class="fa-solid fa-robot" style="color: #ef4444; font-size: 18px;"></i>
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <h3 style="color: #ef4444; font-weight: 600; margin: 0 0 8px 0; font-size: 15px;">Lỗi Gemini API</h3>
+                                        <p style="color: var(--text-secondary); font-size: 13px; line-height: 1.5; margin: 0 0 16px 0;">Đã xảy ra lỗi khi gọi AI: <strong>${e.message}</strong></p>
+                                        <button class="btn btn-outline" style="font-size: 13px; padding: 8px 16px; border-radius: 8px; border-color: rgba(239,68,68,0.5); color: #ef4444; background: rgba(239,68,68,0.05);" onclick="app.generateOutline('${keyword.replace(/'/g, "\\'")}', true)"><i class="fa-solid fa-rotate-right"></i> Thử tạo lại Outline</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div style="border-top: 1px solid var(--border-light); padding-top: 24px;">
+                                <h4 style="color: var(--text-main); font-size: 14px; font-weight: 600; margin: 0 0 12px 0; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-spider" style="color: var(--accent-purple);"></i> Dữ liệu Đối thủ đã thu thập (${urlsToScrape.length} URLs)</h4>
+                                <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 12px;">Dưới đây là cấu trúc Heading thực tế lấy từ các bài viết đang Top trên Google. Bạn có thể tự tham khảo để lên dàn ý.</p>
+                                <div style="background: #0f1115; border: 1px solid var(--border-light); border-radius: 12px; overflow: hidden; box-shadow: inset 0 2px 8px rgba(0,0,0,0.2);">
+                                    <pre style="font-family: 'JetBrains Mono', Consolas, monospace; font-size: 12px; line-height: 1.6; white-space: pre-wrap; padding: 16px; margin: 0; max-height: 400px; overflow-y: auto; color: #e2e8f0;">${headingsData.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
+                                </div>
+                            </div>
+                        </div>`;
+                }
+            },
+
+            async generateSilo(force = false) {
+                // --- Thu thập dữ liệu cluster chi tiết ---
+                const clusterMap = {};
+                this.data.forEach(d => {
+                    if(!d.cluster) return;
+                    if(!clusterMap[d.cluster]) clusterMap[d.cluster] = { parent: null, children: [], totalVol: 0, intents: { transactional: 0, informational: 0, other: 0 } };
+                    clusterMap[d.cluster].totalVol += d.volume || 0;
+                    if(d.intent === 'transactional') clusterMap[d.cluster].intents.transactional++;
+                    else if(d.intent === 'informational') clusterMap[d.cluster].intents.informational++;
+                    else clusterMap[d.cluster].intents.other++;
+                    if(d.keyword === d.cluster) clusterMap[d.cluster].parent = d;
+                    else clusterMap[d.cluster].children.push(d);
+                });
+
+                const clusters = Object.entries(clusterMap).filter(([, v]) => v.parent);
+                if(clusters.length === 0) { this.showToast('Chưa có nhóm từ khóa nào. Hãy gom nhóm trước!', 'triangle-exclamation'); return; }
+
+                // Pre-check Gemini key
+                const geminiKey = this.els.geminiKey.value.trim();
+
+                // --- Tính thống kê tổng quan ---
+                const totalClusters = clusters.length;
+                const totalKeywords = this.data.filter(d => d.cluster).length;
+                const totalVolume = clusters.reduce((s, [, v]) => s + v.totalVol, 0);
+                const topClusters = clusters.sort((a, b) => b[1].totalVol - a[1].totalVol);
+
+                // --- Setup Modal ---
+                document.getElementById('modalAITitle').innerHTML = `<i class="fa-solid fa-sitemap"></i> Kiến Trúc Silo`;
+                document.getElementById('modalAIStatus').innerText = this.els.geminiModel.value;
+                const btnForce = document.getElementById('btnForceAI');
+                btnForce.style.display = 'inline-flex';
+                btnForce.onclick = () => this.generateSilo(true);
+
+                // --- Build Stats Panel HTML ---
+                const statsHtml = `
+                    <div style="flex: 0 0 340px; border-right: 1px solid var(--border-light); display: flex; flex-direction: column; height: 100%; overflow-y: auto;">
+                        <div style="padding: 20px; border-bottom: 1px solid var(--border-light);">
+                            <h4 style="margin: 0 0 16px 0; font-size: 13px; font-weight: 700; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.05em;"><i class="fa-solid fa-chart-pie" style="color: var(--brand-primary); margin-right: 6px;"></i> Tổng Quan Dữ Liệu</h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+                                <div style="text-align: center; padding: 12px 8px; background: var(--bg-hover); border-radius: 10px;">
+                                    <div style="font-size: 20px; font-weight: 700; color: var(--brand-primary);">${totalClusters}</div>
+                                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Nhóm</div>
+                                </div>
+                                <div style="text-align: center; padding: 12px 8px; background: var(--bg-hover); border-radius: 10px;">
+                                    <div style="font-size: 20px; font-weight: 700; color: var(--accent-blue);">${totalKeywords}</div>
+                                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Từ khóa</div>
+                                </div>
+                                <div style="text-align: center; padding: 12px 8px; background: var(--bg-hover); border-radius: 10px;">
+                                    <div style="font-size: 20px; font-weight: 700; color: var(--accent-green);">${totalVolume.toLocaleString()}</div>
+                                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Tổng Vol</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="padding: 20px; flex: 1; overflow-y: auto;">
+                            <h4 style="margin: 0 0 12px 0; font-size: 12px; font-weight: 700; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.05em;"><i class="fa-solid fa-layer-group" style="color: var(--accent-purple); margin-right: 6px;"></i> Top Nhóm (theo Volume)</h4>
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                ${topClusters.slice(0, 15).map(([key, val], idx) => {
+                                    const pct = totalVolume > 0 ? Math.round(val.totalVol / totalVolume * 100) : 0;
+                                    const mainIntent = val.intents.transactional > val.intents.informational ? 'Trans' : 'Info';
+                                    const intentColor = mainIntent === 'Trans' ? 'var(--accent-green)' : 'var(--accent-blue)';
+                                    return `<div style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: 8px; font-size: 12px;">
+                                        <span style="color: var(--text-muted); font-weight: 600; width: 18px;">${idx+1}</span>
+                                        <div style="flex: 1; min-width: 0;">
+                                            <div style="font-weight: 600; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${key}</div>
+                                            <div style="display: flex; gap: 8px; color: var(--text-muted); font-size: 11px; margin-top: 2px;">
+                                                <span>${val.totalVol.toLocaleString()} vol</span>
+                                                <span>${val.children.length + 1} kw</span>
+                                                <span style="color: ${intentColor};">${mainIntent}</span>
+                                            </div>
+                                        </div>
+                                        <div style="width: 40px; text-align: right; font-weight: 700; color: var(--text-main); font-size: 12px;">${pct}%</div>
+                                    </div>`;
+                                }).join('')}
+                            </div>
+                        </div>
+                    </div>`;
+
+                const aiBody = document.getElementById('modalAIBody');
+
+                // --- Cache check ---
+                if(this.state.siloCache && !force) {
+                    aiBody.innerHTML = `
+                        <div style="display: flex; height: 100%;">
+                            ${statsHtml}
+                            <div id="aiEditableContent" contenteditable="true" style="flex: 1; overflow-y: auto; padding: 24px 32px; outline: none; cursor: text; line-height: 1.7;" class="prose">
+                                ${marked.parse(this.state.siloCache)}
+                            </div>
+                        </div>`;
+                    document.getElementById('modalAI').classList.add('active');
+                    return;
+                }
+
+                // --- Loading state ---
+                aiBody.innerHTML = `
+                    <div style="display: flex; height: 100%;">
+                        ${statsHtml}
+                        <div id="aiStreamContainer" style="flex: 1; overflow-y: auto; padding: 24px 32px;" class="prose">
+                            <div style="text-align:center; padding: 40px; color: var(--text-muted);">
+                                <i class="fa-solid fa-circle-notch fa-spin fa-2x" style="margin-bottom:16px;"></i>
+                                <p style="font-size:14px; font-weight:500;">AI đang phân tích kiến trúc nội dung...</p>
+                                <p style="font-size:12px; margin-top:8px;">Phân loại ${totalClusters} nhóm từ khóa thành cấu trúc Silo</p>
+                            </div>
+                        </div>
+                    </div>`;
+                document.getElementById('modalAI').classList.add('active');
+
+                if(!geminiKey) {
+                    document.getElementById('aiStreamContainer').innerHTML = `
+                        <div style="padding: 24px;">
+                            <div style="background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 16px; padding: 20px;">
+                                <h3 style="color: #ef4444; font-weight: 600; margin: 0 0 8px 0;">Chưa cấu hình Gemini API Key</h3>
+                                <p style="color: var(--text-secondary); font-size: 13px; margin: 0 0 12px 0;">Vui lòng vào Cấu Hình & API để nhập Gemini Key.</p>
+                                <button class="btn btn-primary" style="font-size: 13px;" onclick="document.getElementById('modalAI').classList.remove('active'); document.getElementById('modalConfig').classList.add('active');"><i class="fa-solid fa-gear"></i> Mở Cấu Hình</button>
+                            </div>
+                        </div>`;
+                    return;
+                }
+
+                // --- Build rich prompt data ---
+                const clusterDetails = topClusters.map(([key, val]) => {
+                    const mainIntent = val.intents.transactional > val.intents.informational ? 'Transactional' : 'Informational';
+                    const childKws = val.children.sort((a,b) => b.volume - a.volume).slice(0, 8).map(c => `"${c.keyword}" (${c.volume})`).join(', ');
+                    return `- **${key}** | Vol: ${val.totalVol} | KW: ${val.children.length + 1} | Intent: ${mainIntent}\n  Từ khóa con: ${childKws || '(không có)'}`;
+                }).join('\n');
+
+                const prompt = `BẠN LÀ CHUYÊN GIA KIẾN TRÚC THÔNG TIN (Information Architecture) VÀ SEO CONTENT STRATEGY.
+
+## NGUYÊN TẮC TỐI CAO
+- CHỈ TRẢ VỀ KẾT QUẢ MARKDOWN. TUYỆT ĐỐI KHÔNG CHÀO HỎI.
+- Mỗi Silo phải có LOGIC rõ ràng, KHÔNG gom bừa.
+- Silo phải phản ánh hành trình người dùng (User Journey) từ tìm hiểu → so sánh → mua hàng.
+
+## DỮ LIỆU ĐẦU VÀO
+Có ${totalClusters} nhóm từ khóa đã gom cụm, tổng ${totalKeywords} từ khóa, tổng volume ${totalVolume.toLocaleString()}.
+
+**Chi tiết từng nhóm:**
+${clusterDetails}
+
+## YÊU CẦU
+
+### 1. Phân loại Silo (3-7 Topic Hubs)
+Nhóm các cluster trên thành các **Silo chủ đề** theo nguyên tắc:
+- Mỗi Silo = 1 chủ đề lớn có thể tạo thành 1 Hub Page (Pillar Content).
+- Các cluster trong cùng Silo phải có mối liên hệ ngữ nghĩa (semantic relationship).
+- Tên Silo phải rõ ràng, tự nhiên, có thể dùng làm Tên Category hoặc H1 Pillar Page.
+
+### 2. Cấu trúc Internal Linking
+Với mỗi Silo, xác định:
+- **Pillar Page** (trang trụ cột): Keyword nào nên làm trang chính?
+- **Cluster Pages** (trang phụ): Liệt kê các bài viết con.
+- **Gợi ý liên kết ngang** (Silo này nên link sang Silo nào? Tại sao?)
+
+### 3. Đề xuất Chiến lược Nội dung
+- Ưu tiên viết Silo nào trước (dựa trên volume + intent)?
+- Tỷ lệ nội dung Info vs Trans nên là bao nhiêu?
+
+## ĐỊNH DẠNG OUTPUT
+
+### 🏗️ Silo 1: [Tên Silo]
+**Pillar Page:** [Keyword chính — Vol: xxx]
+**Mục đích:** [1 câu mô tả intent chính của silo]
+**Cluster Pages:**
+| # | Keyword | Volume | Intent | Loại nội dung đề xuất |
+|---|---------|--------|--------|----------------------|
+| 1 | ... | ... | ... | Guide / Review / List |
+
+**Liên kết ngang:** Link sang → [Silo X] vì [lý do].
+
+---
+(Lặp lại cho mỗi Silo)
+
+### 📊 Chiến Lược Ưu Tiên
+| Thứ tự | Silo | Lý do ưu tiên |
+|--------|------|---------------|
+| 1 | ... | Volume cao, intent rõ |
+`;
+
+                const streamTarget = document.getElementById('aiStreamContainer');
+
+                try { 
+                    const md = await this.callGeminiStreaming(prompt, streamTarget); 
+                    // Enable editing after stream
+                    streamTarget.setAttribute('contenteditable', 'true');
+                    streamTarget.id = 'aiEditableContent';
+                    streamTarget.style.cursor = 'text';
+                    streamTarget.style.outline = 'none';
+                    this.state.siloCache = md;
+                    this.saveState();
+                } 
+                catch(e) { streamTarget.innerHTML = `<div style="color: #ef4444; padding: 20px;">Lỗi: ${e.message}</div>`; }
+            },
+
+            copyAIContent() {
+                const editable = document.getElementById('aiEditableContent');
+                const source = editable || document.getElementById('aiStreamContainer') || document.getElementById('modalAIBody');
+                if(source) { navigator.clipboard.writeText(source.innerText); this.showToast('Đã copy nội dung!', 'copy'); }
+            },
+
+            // --- Export ---
+            exportWorkspace() {
+                if(this.data.length === 0) return alert('Không có dữ liệu.');
+                const state = {
+                    version: "pro-v4",
+                    settings: { 
+                        apiKeys: this.els.apiKeys.value, blacklist: this.els.blacklist.value, 
+                        geminiKey: this.els.geminiKey.value, geminiModel: this.els.geminiModel.value, 
+                        gOptThinking: this.els.gOptThinking.checked, gOptSearch: this.els.gOptSearch.checked,
+                        gl: this.els.cGl.value, hl: this.els.cHl.value, thresh: this.els.cThresh.value,
+                        batchSize: parseInt(this.els.configBatchSize.value) || 50,
+                        delay: parseInt(this.els.configDelay.value) || 0,
+                    },
+                    originalData: this.data.map(d => ({...d, urls: normalizeUrls(d.urls)})),
+                    siloCache: this.state.siloCache || null
+                };
+                const blob = new Blob([JSON.stringify(state)], {type: "application/json"});
+                const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `SEO_Workspace_${new Date().toISOString().slice(0,10)}.json`; a.click();
+                this.showToast('Đã xuất workspace!', 'download');
+            },
+            handleWorkspaceImport(e) {
+                const file = e.target.files[0]; if(!file) return;
+                const r = new FileReader(); 
+                r.onload = async (evt) => { 
+                    try { 
+                        const parsed = JSON.parse(evt.target.result);
+                        if(!parsed.originalData || !Array.isArray(parsed.originalData)) {
+                            this.showToast('File workspace không hợp lệ! Thiếu trường originalData.', 'triangle-exclamation');
+                            return;
+                        }
+                        await dbHelper.save('session', parsed); 
+                        window.location.reload(); 
+                    } catch(err) { 
+                        this.showToast('File JSON không hợp lệ: ' + err.message, 'triangle-exclamation'); 
+                    } 
+                }; 
+                r.readAsText(file); e.target.value = '';
+            },
+            exportExcel() {
+                if(this.data.length === 0) return this.showToast('Không có dữ liệu.', 'triangle-exclamation');
+                const unclustered = this.data.filter(d => !d.cluster);
+                const clustered = this.data.filter(d => d.cluster);
+                const groups = {};
+                clustered.forEach(d => { if(!groups[d.cluster]) groups[d.cluster] = { items: [], vol: 0 }; groups[d.cluster].items.push(d); groups[d.cluster].vol += d.volume; });
+                const sortedKeys = Object.keys(groups).sort((a,b) => groups[b].vol - groups[a].vol);
+                
+                // Sheet 1: Clusters
+                const ws_data = [["Từ khóa", "Volume", "Search Intent", "Từ khóa chính (Parent)", "Số URLs"]];
+                sortedKeys.forEach(g => {
+                    groups[g].items.sort((a,b) => b.volume - a.volume).forEach(item => {
+                        const urlCount = item.urls ? item.urls.length : 0;
+                        ws_data.push([item.keyword, item.volume, item.intent === 'transactional' ? 'Mua hàng' : 'Thông tin', g, urlCount]);
+                    });
+                });
+                unclustered.forEach(item => {
+                    const urlCount = item.urls ? item.urls.length : 0;
+                    ws_data.push([item.keyword, item.volume, item.intent === 'transactional' ? 'Mua hàng' : 'Thông tin', '(Chưa gom nhóm)', urlCount]);
+                });
+                
+                const wb = XLSX.utils.book_new();
+                const ws1 = XLSX.utils.aoa_to_sheet(ws_data);
+                XLSX.utils.book_append_sheet(wb, ws1, "SEO Clusters");
+                
+                // Sheet 2: SERP Data
+                const serpData = [["Từ khóa", "Vị trí", "URL", "Tiêu đề", "Mô tả"]];
+                this.data.filter(d => d.isScraped && d.urls).forEach(item => {
+                    (item.urls || []).forEach((u, idx) => {
+                        const url = typeof u === 'string' ? u : u.link;
+                        const title = typeof u === 'string' ? '' : (u.title || '');
+                        const snippet = typeof u === 'string' ? '' : (u.snippet || '');
+                        serpData.push([item.keyword, idx + 1, url, title, snippet]);
+                    });
+                });
+                const ws2 = XLSX.utils.aoa_to_sheet(serpData);
+                XLSX.utils.book_append_sheet(wb, ws2, "SERP Data");
+                
+                XLSX.writeFile(wb, "SEO_Keywords_Clustered.xlsx");
+                this.showToast(`Đã xuất Excel (${ws_data.length - 1} KW, ${serpData.length - 1} SERP rows)!`, 'file-excel');
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => app.init());
+    </script>
+</body>
+</html>
