@@ -996,6 +996,8 @@
                         }
                     }
                 } catch(e) {}
+                // Luôn gọi renderTable() sau khi load xong — nếu không có data sẽ hiện màn hình onboarding
+                this.renderTable();
             },
 
             saveConfigAndClose() {
