@@ -1979,29 +1979,28 @@
                         }
 
                         // Bước 2: Gọi AI tạo outline
-                        let clusterContext = '';
-                        if(item.cluster) {
-                            const siblings = this.data.filter(d => d.cluster === item.cluster && d.keyword !== kw)
-                                .sort((a,b) => b.volume - a.volume).slice(0, 15);
-                            if(siblings.length > 0) {
-                                clusterContext = `\nTừ khóa phụ cùng nhóm:\n${siblings.map(s => `- "${s.keyword}" (Vol: ${s.volume})`).join('\n')}\n`;
-                            }
-                        }
-
-                        const serpContext = item.urls.slice(0, 5).map((u, idx) => {
+                        const serpCtx = item.urls.slice(0, 5).map((u, idx) => {
                             const obj = typeof u === 'string' ? { link: u } : u;
-                            return `${idx+1}. "${obj.title || ''}" \u2014 ${obj.snippet || ''}`;
+                            return `${idx+1}. [${obj.title || 'Không có tiêu đề'}] | URL: ${obj.link || ''} | ${obj.snippet ? obj.snippet : ''}`;
                         }).join('\n');
 
-                        const prompt = `B\u1ea1n l\u00e0 chuy\u00ean gia SEO On-Page. CH\u1ec8 tr\u1ea3 v\u1ec1 Markdown. KH\u00d4NG ch\u00e0o h\u1ecfi, KH\u00d4NG gi\u1ea3i th\u00edch.\n\nT\u1eeb kh\u00f3a: \"${kw}\" (Vol: ${item.volume})${clusterContext}\n\nTop SERP:\n${serpContext}\n\nHeading \u0111\u1ed1i th\u1ee7 (tham kh\u1ea3o):\n${headingsData}\n\nY\u00eau c\u1ea7u:\n1. D\u00f2ng \u0111\u1ea7u: **\ud83c\udfaf Search Intent:** [lo\u1ea1i] \u2014 [m\u00f4 t\u1ea3 ng\u1eafn]\n2. D\u00f2ng hai: **\ud83d\udcdd Content Format:** [lo\u1ea1i]\n3. H1 t\u1ef1 nhi\u00ean ch\u1ee9a keyword ch\u00ednh\n4. T\u1ed0I THI\u1ec2U 6 m\u1ee5c H2, T\u1ed0I \u0110A 8 m\u1ee5c H2 (m\u1ed7i H2 c\u00f3 1-3 H3 cho ph\u1ea7n quan tr\u1eafng, c\u00f3 th\u1ec3 kh\u00f4ng c\u00f3 H3 n\u1ebfu \u0111\u01a1n gi\u1ea3n)\n5. M\u1ee5c FAQ cu\u1ed1i g\u1ed3m 3-5 c\u00e2u h\u1ecfi d\u1ea1ng H3 + tr\u1ea3 l\u1eddi ng\u1eafn 1-2 c\u00e2u\n\nQUY T\u1eaeC B\u1eaeT BU\u1ed8C:\n- H2 d\u00f9ng ## (hai d\u1ea5u #), H3 d\u00f9ng ### (ba d\u1ea5u #)\n- KH\u00d4NG th\u00eam ch\u00fa th\u00edch (H2) hay (H3) sau heading \u2014 ch\u1ec9 d\u00f9ng markdown thu\u1ea7n\n- KH\u00d4NG copy nguy\u00ean heading \u0111\u1ed1i th\u1ee7, ch\u1ec9 l\u1ea5y \u00fd v\u00e0 vi\u1ebft l\u1ea1i\n- M\u1ed7i H2 ph\u1ea3i ro r\u00e0ng, kh\u00f4ng ch\u1eadp, \u0111\u00fang intent`;
+                        let clusterKwsBatch = '';
+                        if(item.cluster) {
+                            const siblings = this.data.filter(d => d.cluster === item.cluster && d.keyword !== kw)
+                                .sort((a,b) => b.volume - a.volume).slice(0, 10);
+                            if(siblings.length > 0) clusterKwsBatch = `\nTừ khóa phụ cùng nhóm: ${siblings.map(s => '"'+s.keyword+'"').join(', ')}\n`;
+                        }
 
+                        const hdTrimmed = headingsData && headingsData.length > 3000 ? headingsData.slice(0, 3000) + '\n...(đã cắt bớt)' : (headingsData || '(không có dữ liệu heading)');
+
+                        const prompt = `Bạn là chuyên gia SEO On-Page với 10 năm kinh nghiệm. Xây dựng outline bài viết CHẤT LƯỢNG CAO theo tiêu chí E-E-A-T của Google. CHỈ trả về Markdown. KHÔNG chào hỏi.\n\n=== DỮ LIỆU ĐẦU VÀO ===\nTừ khóa chính: "${kw}" (Volume: ${item.volume}/tháng)${clusterKwsBatch}\nTop SERP (đối thủ đang rank):\n${serpCtx}\n\nHeading thực tế của đối thủ (phân tích Gap):\n${hdTrimmed}\n\n=== YÊU CẦU OUTPUT ===\nTRẢ VỀ ĐÚNG ĐỊNH DẠNG, KHÔNG THÊM GÌ KHÁC:\n\n## 📊 Định hướng chiến lược\n\n**🎯 Search Intent:** [Informational/Commercial/Transactional] — [người dùng muốn gì?]\n**😣 Pain Point:** [vấn đề cụ thể bài viết giải quyết]\n**📄 Content Format:** [How-to Guide/Listicle/Review/So sánh/Kiến thức nền]\n**👤 Target Audience:** [ai là người đọc, họ đang ở giai đoạn nào?]\n**🏆 SERP Gap:** [điểm CỤ THỂ tất cả đối thủ bỏ sót — đây là cơ hội]\n\n---\n\n# [H1: Tiêu đề hấp dẫn, chứa từ khóa tự nhiên, nêu rõ lợi ích]\n\n> **Intro/Sapo:** [2-3 câu hook: nêu vấn đề → gợi tò mò → hứa hẹn giải pháp]\n\n## [H2 — viết CỤ THỂ, không chung chung]\n*(Angle: ...)*\n### [H3 nếu cần]\n\n[5-8 H2 tổng cộng, ÍT NHẤT 1-2 H2 khai thác SERP Gap]\n\n## ❓ FAQ — Câu hỏi thường gặp\n### [Câu hỏi 1]\n[Trả lời 1-2 câu]\n### [Câu hỏi 2]\n[Trả lời 1-2 câu]\n[3-5 câu hỏi tổng cộng]\n\n> **Kết luận & CTA:** [Tóm tắt giá trị → hành động tiếp theo]\n\nQUY TẮC: Chỉ dùng # H1, ## H2, ### H3 — KHÔNG chú thích (H2)/(H3). H2 phải CỤ THỂ. KHÔNG copy heading đối thủ nguyên văn.`;
 
                         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${this.els.geminiModel.value}:generateContent?key=${geminiKey}`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
                                 contents: [{ parts: [{ text: prompt }] }],
-                                generationConfig: { maxOutputTokens: 8192 }
+                                generationConfig: { maxOutputTokens: 4096 }
                             })
                         });
 
@@ -2183,37 +2182,75 @@
                 // --- PROMPT SEO (1 keyword only, compact) ---
                 const serpContext = item.urls.slice(0, 5).map((u, i) => {
                     const obj = typeof u === 'string' ? { link: u } : u;
-                    return `${i+1}. "${obj.title || ''}" — ${obj.snippet || ''}`;
+                    return `${i+1}. [${obj.title || 'Không có tiêu đề'}] | URL: ${obj.link || ''} | ${obj.snippet ? obj.snippet : ''}`;
                 }).join('\n');
+
+                // Từ khóa phụ cùng nhóm
+                let clusterKws = '';
+                if(item.cluster) {
+                    const siblings = this.data.filter(d => d.cluster === item.cluster && d.keyword !== keyword)
+                        .sort((a,b) => b.volume - a.volume).slice(0, 10);
+                    if(siblings.length > 0) clusterKws = `\nTừ khóa phụ cùng nhóm: ${siblings.map(s => '"'+s.keyword+'"').join(', ')}\n`;
+                }
 
                 // Giới hạn headingsData để tránh vượt token limit
                 const headingsTrimmed = headingsData.length > 3000
                     ? headingsData.slice(0, 3000) + '\n...(đã cắt bớt)'
                     : headingsData;
 
-                const prompt = `Bạn là chuyên gia SEO On-Page. CHỈ trả về Markdown. KHÔNG chào hỏi, KHÔNG giải thích ngoài format.
+                const prompt = `Bạn là chuyên gia SEO On-Page với 10 năm kinh nghiệm. Xây dựng outline bài viết CHẤT LƯỢNG CAO theo tiêu chí E-E-A-T của Google. CHỈ trả về Markdown. KHÔNG chào hỏi.
 
-Từ khóa: "${keyword}" (Vol: ${item.volume})
-
-Top SERP:
+=== DỮ LIỆU ĐẦU VÀO ===
+Từ khóa chính: "${keyword}" (Volume: ${item.volume}/tháng)${clusterKws}
+Top SERP (đối thủ đang rank):
 ${serpContext}
 
-Heading đối thủ (tham khảo):
+Heading thực tế của đối thủ (phân tích Gap):
 ${headingsTrimmed}
 
-Yêu cầu:
-1. Dòng đầu: **🎯 Search Intent:** [loại] — [mô tả ngắn]
-2. Dòng hai: **📝 Content Format:** [loại]
-3. H1 tự nhiên chứa keyword
-4. TỐI THIỂU 6 mục H2, TỐI ĐA 8 mục H2 (mỗi H2 có 1-3 H3 cho phần quan trắng, có thể không có H3 nếu đơn giản)
-5. Mục FAQ cuối gồm 3-5 câu hỏi dạng H3 + trả lời ngắn 1-2 câu
+=== YÊU CẦU OUTPUT ===
+TRẢ VỀ ĐÚNG ĐỊNH DẠNG SAU, KHÔNG THÊM GÌ KHÁC:
 
-QUY TẮC BẮT BUỘC:
-- H2 dùng ## (hai dấu #), H3 dùng ### (ba dấu #)
-- KHÔNG thêm chú thích (H2) hay (H3) vào sau heading — chỉ dùng markdown thuần
-- KHÔNG copy nguyên heading đối thủ, chỉ lấy ý và viết lại
-- Mỗi H2 phải được viết ro ràng, không chập nhau, đúng intent
-- Outline phải súc tích và THỰC SỰ TỐT HƠN nội dung đối thủ`;
+## 📊 Định hướng chiến lược
+
+**🎯 Search Intent:** [Informational/Commercial/Transactional/Navigational] — [người dùng muốn gì cụ thể?]
+**😣 Pain Point:** [vấn đề cụ thể bài viết này giải quyết]
+**📄 Content Format:** [How-to Guide/Listicle/Review/So sánh/Kiến thức nền]
+**👤 Target Audience:** [ai là người đọc, họ đang ở giai đoạn nào trong hành trình?]
+**🏆 SERP Gap:** [điểm CỤ THỂ mà TẤT CẢ đối thủ đang bỏ sót — đây là cơ hội để vượt lên]
+
+---
+
+# [H1: Tiêu đề hấp dẫn, chứa từ khóa tự nhiên, nêu rõ lợi ích cụ thể]
+
+> **Intro/Sapo:** [2-3 câu hook người đọc: nêu vấn đề → gợi tò mò → hứa hẹn giải pháp. Phải làm người đọc muốn tiếp tục đọc]
+
+## [H2 — viết CỤ THỂ và hữu ích, không dùng tiêu đề chung chung]
+*(Angle: Đây là phần "Standard" — điểm mà tất cả đối thủ đều cover, nhưng chúng ta viết sâu hơn/rõ hơn)*
+
+## [H2 tiếp theo...]
+*(Angle: ...)*
+### [H3 — chia nhỏ nếu cần, ví dụ: các bước cụ thể, ví dụ minh họa]*
+
+[Tiếp tục cho đến 5-8 H2 tổng cộng]
+[ÍT NHẤT 1-2 H2 cuối phải khai thác SERP Gap — điểm đối thủ bỏ sót]
+
+## ❓ FAQ — Câu hỏi thường gặp
+### [Câu hỏi thực tế mà người dùng hay tìm kiếm 1]
+[Trả lời ngắn gọn, trực tiếp, 1-2 câu]
+### [Câu hỏi thực tế 2]
+[Trả lời 1-2 câu]
+[3-5 câu hỏi tổng cộng]
+
+> **Kết luận & CTA:** [1-2 câu tóm tắt giá trị cốt lõi → 1 hành động cụ thể người đọc nên làm tiếp theo]
+
+QUY TẮC TUYỆT ĐỐI:
+- Chỉ dùng Markdown thuần: # H1, ## H2, ### H3. KHÔNG thêm chú thích (H2)/(H3) vào sau heading
+- H2 phải CỤ THỂ: KHÔNG dùng "Lợi ích của X" → dùng "Vì sao X giúp [đối tượng cụ thể] [đạt kết quả Y]"
+- KHÔNG copy heading đối thủ nguyên văn, phải viết lại tốt hơn
+- CHỈ trả về Markdown, KHÔNG chào hỏi, KHÔNG thêm lời giải thích nào ngoài outline`;
+
+
 
                 try { 
                     const md = await this.callGeminiStreaming(prompt, streamTarget);
