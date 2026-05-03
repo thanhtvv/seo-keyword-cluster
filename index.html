@@ -2014,7 +2014,71 @@
 
                         const hdTrimmed = headingsData && headingsData.length > 3000 ? headingsData.slice(0, 3000) + '\n...(đã cắt bớt)' : (headingsData || '(không có dữ liệu heading)');
 
-                        const prompt = `Bạn là chuyên gia SEO On-Page với 10 năm kinh nghiệm. Xây dựng outline bài viết CHẤT LƯỢNG CAO theo tiêu chí E-E-A-T của Google. CHỈ trả về Markdown. KHÔNG chào hỏi.\n\n=== DỮ LIỆU ĐẦU VÀO ===\nTừ khóa chính: "${kw}" (Volume: ${item.volume}/tháng)${clusterKwsBatch}\nTop SERP (đối thủ đang rank):\n${serpCtx}\n\nHeading thực tế của đối thủ (phân tích Gap):\n${hdTrimmed}\n\n=== YÊU CẦU OUTPUT ===\nTRẢ VỀ ĐÚNG ĐỊNH DẠNG, KHÔNG THÊM GÌ KHÁC:\n\n## 📊 Định hướng chiến lược\n\n**🎯 Search Intent:** [Informational/Commercial/Transactional] — [người dùng muốn gì?]\n**😣 Pain Point:** [vấn đề cụ thể bài viết giải quyết]\n**📄 Content Format:** [How-to Guide/Listicle/Review/So sánh/Kiến thức nền]\n**👤 Target Audience:** [ai là người đọc, họ đang ở giai đoạn nào?]\n**🏆 SERP Gap:** [điểm CỤ THỂ tất cả đối thủ bỏ sót — đây là cơ hội]\n\n---\n\n# [H1: Tiêu đề hấp dẫn, chứa từ khóa tự nhiên, nêu rõ lợi ích]\n\n> **Intro/Sapo:** [2-3 câu hook: nêu vấn đề → gợi tò mò → hứa hẹn giải pháp]\n\n## [H2 — viết CỤ THỂ, không chung chung]\n*(Angle: ...)*\n### [H3 nếu cần]\n\n[5-8 H2 tổng cộng, ÍT NHẤT 1-2 H2 khai thác SERP Gap]\n\n## ❓ FAQ — Câu hỏi thường gặp\n### [Câu hỏi 1]\n[Trả lời 1-2 câu]\n### [Câu hỏi 2]\n[Trả lời 1-2 câu]\n[3-5 câu hỏi tổng cộng]\n\n> **Kết luận & CTA:** [Tóm tắt giá trị → hành động tiếp theo]\n\nQUY TẮC: Chỉ dùng # H1, ## H2, ### H3 — KHÔNG chú thích (H2)/(H3). H2 phải CỤ THỂ. KHÔNG copy heading đối thủ nguyên văn.`;
+                        const prompt = `Bạn là biên tập viên SEO cấp cao tại một trang tin công nghệ hàng đầu Việt Nam (tương đương Sforum, Thế Giới Di Động). Viết outline bài viết theo ĐÚNG phong cách các trang lớn. CHỈ trả Markdown, KHÔNG chào hỏi.
+
+=== DỮ LIỆU ===
+Từ khóa: "${kw}" (Vol: ${item.volume}/tháng)${clusterKwsBatch}
+SERP đối thủ:
+${serpCtx}
+
+Heading đối thủ:
+${hdTrimmed}
+
+=== PHONG CÁCH OUTLINE CHUẨN ===
+Học theo cách Sforum và TGDĐ tổ chức heading:
+- MỖI H2 là 1 CHỦ ĐỀ LỚN bao trùm, chứa 2-5 H3 con bên trong
+- KHÔNG tạo H2 lẻ tẻ cho từng ý nhỏ — phải GOM NHÓM các ý liên quan vào cùng 1 H2
+- H3 mới là nơi đi vào chi tiết cụ thể
+
+VÍ DỤ MẪU (tham khảo cấu trúc, KHÔNG copy):
+## Tại sao [đối tượng] cần [giải pháp]?
+## Tổng hợp kinh nghiệm [chủ đề chính] từ A-Z
+### Xác định nhu cầu sử dụng
+### Lựa chọn [tiêu chí 1] phù hợp
+### Đảm bảo [tiêu chí 2]
+### Kiểm tra [tiêu chí 3]
+## [Câu hỏi phụ liên quan mà người dùng hay thắc mắc]
+## Những sai lầm phổ biến khi [hành động chính]
+## FAQ
+
+=== OUTPUT ===
+
+## 📊 Phân tích chiến lược
+**🎯 Search Intent:** [loại] — [mô tả]
+**👤 Đối tượng:** [ai đọc, giai đoạn nào]
+**🏆 SERP Gap:** [điểm đối thủ bỏ sót]
+
+---
+
+# [H1 chứa keyword tự nhiên, hấp dẫn]
+
+> **Sapo:** [2-3 câu hook]
+
+## [H2 lớn #1 — chủ đề bao trùm, chứa 2-5 H3 con]
+### [H3 chi tiết 1]
+### [H3 chi tiết 2]
+### [H3 chi tiết 3]
+
+## [H2 lớn #2 — chủ đề bao trùm khác]
+### [H3 chi tiết 1]
+### [H3 chi tiết 2]
+
+[Tổng cộng 4-6 H2 lớn, mỗi H2 có 2-5 H3]
+[Ít nhất 1 H2 khai thác SERP Gap]
+
+## ❓ FAQ
+### [Câu hỏi 1]
+[Trả lời 1-2 câu]
+### [Câu hỏi 2]
+[Trả lời 1-2 câu]
+
+> **Kết luận:** [Tóm tắt + CTA]
+
+QUY TẮC TUYỆT ĐỐI:
+- Chỉ dùng Markdown: # H1, ## H2, ### H3
+- H2 PHẢI là chủ đề bao trùm, H3 mới là chi tiết — KHÔNG tạo H2 lẻ cho từng ý nhỏ
+- KHÔNG copy heading đối thủ, viết lại hay hơn
+- KHÔNG thêm (H2)/(H3) sau heading`;
 
                         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${this.els.geminiModel.value}:generateContent?key=${geminiKey}`, {
                             method: 'POST',
@@ -2240,57 +2304,71 @@
                     ? headingsData.slice(0, 3000) + '\n...(đã cắt bớt)'
                     : headingsData;
 
-                const prompt = `Bạn là chuyên gia SEO On-Page với 10 năm kinh nghiệm. Xây dựng outline bài viết CHẤT LƯỢNG CAO theo tiêu chí E-E-A-T của Google. CHỈ trả về Markdown. KHÔNG chào hỏi.
+                const prompt = `Bạn là biên tập viên SEO cấp cao tại một trang tin công nghệ hàng đầu Việt Nam (tương đương Sforum, Thế Giới Di Động). Viết outline bài viết theo ĐÚNG phong cách các trang lớn. CHỈ trả Markdown, KHÔNG chào hỏi.
 
-=== DỮ LIỆU ĐẦU VÀO ===
-Từ khóa chính: "${keyword}" (Volume: ${item.volume}/tháng)${clusterKws}
-Top SERP (đối thủ đang rank):
+=== DỮ LIỆU ===
+Từ khóa: "${keyword}" (Vol: ${item.volume}/tháng)${clusterKws}
+SERP đối thủ:
 ${serpContext}
 
-Heading thực tế của đối thủ (phân tích Gap):
+Heading đối thủ:
 ${headingsTrimmed}
 
-=== YÊU CẦU OUTPUT ===
-TRẢ VỀ ĐÚNG ĐỊNH DẠNG SAU, KHÔNG THÊM GÌ KHÁC:
+=== PHONG CÁCH OUTLINE CHUẨN ===
+Học theo cách Sforum và TGDĐ tổ chức heading:
+- MỖI H2 là 1 CHỦ ĐỀ LỚN bao trùm, chứa 2-5 H3 con bên trong
+- KHÔNG tạo H2 lẻ tẻ cho từng ý nhỏ — phải GOM NHÓM các ý liên quan vào cùng 1 H2
+- H3 mới là nơi đi vào chi tiết cụ thể
 
-## 📊 Định hướng chiến lược
+VÍ DỤ MẪU (tham khảo cấu trúc, KHÔNG copy):
+## Tại sao [đối tượng] cần [giải pháp]?
+## Tổng hợp kinh nghiệm [chủ đề chính] từ A-Z
+### Xác định nhu cầu sử dụng
+### Lựa chọn [tiêu chí 1] phù hợp
+### Đảm bảo [tiêu chí 2]
+### Kiểm tra [tiêu chí 3]
+## [Câu hỏi phụ liên quan mà người dùng hay thắc mắc]
+## Những sai lầm phổ biến khi [hành động chính]
+## FAQ
 
-**🎯 Search Intent:** [Informational/Commercial/Transactional/Navigational] — [người dùng muốn gì cụ thể?]
-**😣 Pain Point:** [vấn đề cụ thể bài viết này giải quyết]
-**📄 Content Format:** [How-to Guide/Listicle/Review/So sánh/Kiến thức nền]
-**👤 Target Audience:** [ai là người đọc, họ đang ở giai đoạn nào trong hành trình?]
-**🏆 SERP Gap:** [điểm CỤ THỂ mà TẤT CẢ đối thủ đang bỏ sót — đây là cơ hội để vượt lên]
+=== OUTPUT ===
+
+## 📊 Phân tích chiến lược
+**🎯 Search Intent:** [loại] — [mô tả]
+**👤 Đối tượng:** [ai đọc, giai đoạn nào]
+**🏆 SERP Gap:** [điểm đối thủ bỏ sót]
 
 ---
 
-# [H1: Tiêu đề hấp dẫn, chứa từ khóa tự nhiên, nêu rõ lợi ích cụ thể]
+# [H1 chứa keyword tự nhiên, hấp dẫn]
 
-> **Intro/Sapo:** [2-3 câu hook người đọc: nêu vấn đề → gợi tò mò → hứa hẹn giải pháp. Phải làm người đọc muốn tiếp tục đọc]
+> **Sapo:** [2-3 câu hook]
 
-## [H2 — viết CỤ THỂ và hữu ích, không dùng tiêu đề chung chung]
-*(Angle: Đây là phần "Standard" — điểm mà tất cả đối thủ đều cover, nhưng chúng ta viết sâu hơn/rõ hơn)*
+## [H2 lớn #1 — chủ đề bao trùm, chứa 2-5 H3 con]
+### [H3 chi tiết 1]
+### [H3 chi tiết 2]
+### [H3 chi tiết 3]
 
-## [H2 tiếp theo...]
-*(Angle: ...)*
-### [H3 — chia nhỏ nếu cần, ví dụ: các bước cụ thể, ví dụ minh họa]*
+## [H2 lớn #2 — chủ đề bao trùm khác]
+### [H3 chi tiết 1]
+### [H3 chi tiết 2]
 
-[Tiếp tục cho đến 5-8 H2 tổng cộng]
-[ÍT NHẤT 1-2 H2 cuối phải khai thác SERP Gap — điểm đối thủ bỏ sót]
+[Tổng cộng 4-6 H2 lớn, mỗi H2 có 2-5 H3]
+[Ít nhất 1 H2 khai thác SERP Gap]
 
-## ❓ FAQ — Câu hỏi thường gặp
-### [Câu hỏi thực tế mà người dùng hay tìm kiếm 1]
-[Trả lời ngắn gọn, trực tiếp, 1-2 câu]
-### [Câu hỏi thực tế 2]
+## ❓ FAQ
+### [Câu hỏi 1]
 [Trả lời 1-2 câu]
-[3-5 câu hỏi tổng cộng]
+### [Câu hỏi 2]
+[Trả lời 1-2 câu]
 
-> **Kết luận & CTA:** [1-2 câu tóm tắt giá trị cốt lõi → 1 hành động cụ thể người đọc nên làm tiếp theo]
+> **Kết luận:** [Tóm tắt + CTA]
 
 QUY TẮC TUYỆT ĐỐI:
-- Chỉ dùng Markdown thuần: # H1, ## H2, ### H3. KHÔNG thêm chú thích (H2)/(H3) vào sau heading
-- H2 phải CỤ THỂ: KHÔNG dùng "Lợi ích của X" → dùng "Vì sao X giúp [đối tượng cụ thể] [đạt kết quả Y]"
-- KHÔNG copy heading đối thủ nguyên văn, phải viết lại tốt hơn
-- CHỈ trả về Markdown, KHÔNG chào hỏi, KHÔNG thêm lời giải thích nào ngoài outline`;
+- Chỉ dùng Markdown: # H1, ## H2, ### H3
+- H2 PHẢI là chủ đề bao trùm, H3 mới là chi tiết — KHÔNG tạo H2 lẻ cho từng ý nhỏ
+- KHÔNG copy heading đối thủ, viết lại hay hơn
+- KHÔNG thêm (H2)/(H3) sau heading`;
 
 
 
