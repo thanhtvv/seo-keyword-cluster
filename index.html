@@ -1012,23 +1012,77 @@
             async handleFileUpload(e) {
                 const file = e.target.files[0]; if(!file) return;
                 const reader = new FileReader();
-                reader.onerror = () => this.showToast('Không đọc được file!', 'triangle-exclamation');
+                reader.onerror = () => this.showToast('Kh\u00f4ng \u0111\u1ecdc \u0111\u01b0\u1ee3c file!', 'triangle-exclamation');
                 reader.onload = async (evt) => {
                     try {
                         const bstr = evt.target.result;
-                        const wb = XLSX.read(bstr, { type: 'binary' });
-                        const json = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1 });
-                        if(json.length < 2) { this.showToast('File trống hoặc không có dữ liệu!', 'triangle-exclamation'); return; }
-                        const newData = [];
-                        for(let r=1; r<json.length; r++) {
-                            const kw = json[r][0];
-                            if(kw) newData.push({ keyword: kw.toString().trim(), volume: json[r][1] ? parseInt(json[r][1]) : 0, urls: null, cluster: null, isScraped: false, intent: null });
+                        let rows = [];
+
+                        if(file.name.toLowerCase().endsWith('.csv')) {
+                            const parsed = Papa.parse(bstr, { skipEmptyLines: true });
+                            rows = parsed.data;
+                        } else {
+                            const wb = XLSX.read(bstr, { type: 'binary' });
+                            rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: '' });
                         }
-                        if(newData.length === 0) { this.showToast('Không tìm thấy cột Keyword/Volume hợp lệ!', 'triangle-exclamation'); return; }
+
+                        if(rows.length < 2) { this.showToast('File tr\u1ed1ng ho\u1eb7c kh\u00f4ng c\u00f3 d\u1eef li\u1ec7u!', 'triangle-exclamation'); return; }
+
+                        // T\u00ecm h\u00e0ng header \u0111\u1ea7u ti\u00ean c\u00f3 \u00edt nh\u1ea5t 2 \u00f4 ch\u1ee9a ch\u1eef (b\u1ecf qua c\u00e1c h\u00e0ng tr\u1ed1ng/s\u1ed1 \u1edf \u0111\u1ea7u)
+                        let headerRowIdx = 0;
+                        for(let i = 0; i < Math.min(5, rows.length); i++) {
+                            const textCells = rows[i].filter(c => c && isNaN(c) && String(c).trim().length > 0);
+                            if(textCells.length >= 1) { headerRowIdx = i; break; }
+                        }
+                        const headers = rows[headerRowIdx].map(h => String(h || '').trim().toLowerCase());
+
+                        // Pattern nh\u1eadn d\u1ea1ng c\u1ed9t keyword
+                        const kwPats = [/^keyword/i,/^t[u\u00f9\u1ee5]\s*kh[o\u00f3\u1ecf]a/i,/^t\u1eeb\s*kh/i,/^kw$/i,/^search.term/i,/^query/i,/^phrase/i,/^term$/i,/key/i,/t\u1eeb/i,/kh\u00f3a/i];
+                        // Pattern nh\u1eadn d\u1ea1ng c\u1ed9t volume
+                        const volPats = [/^volume$/i,/^vol$/i,/^search.vol/i,/^monthly/i,/^avg/i,/^l[u\u01b0][o\u1ee3]ng/i,/^traffic/i,/^searches$/i,/^msv$/i,/^sv$/i,/^count$/i,/vol/i,/l\u01b0\u1ee3ng/i,/search/i];
+
+                        let kwCol = -1, volCol = -1;
+                        for(let i = 0; i < headers.length; i++) {
+                            if(kwCol === -1 && kwPats.some(p => p.test(headers[i]))) kwCol = i;
+                            else if(volCol === -1 && volPats.some(p => p.test(headers[i]))) volCol = i;
+                        }
+
+                        // Fallback: d\u00f9ng ki\u1ec3u d\u1eef li\u1ec7u \u0111\u1ec3 \u0111o\u00e1n
+                        if(kwCol === -1 || volCol === -1) {
+                            for(let c = 0; c < headers.length; c++) {
+                                const sample = rows.slice(headerRowIdx + 1, Math.min(headerRowIdx + 6, rows.length))
+                                    .map(r => r[c]).filter(v => v !== '' && v != null);
+                                if(sample.length === 0) continue;
+                                const allNum = sample.every(v => !isNaN(String(v).replace(/[,\.]/g,'')));
+                                const hasText = sample.some(v => isNaN(v) && String(v).trim().length > 1);
+                                if(kwCol === -1 && hasText && c !== volCol) kwCol = c;
+                                else if(volCol === -1 && allNum && c !== kwCol) volCol = c;
+                            }
+                        }
+
+                        if(kwCol === -1) {
+                            this.showToast('Kh\u00f4ng t\u00ecm \u0111\u01b0\u1ee3c c\u1ed9t Keyword. H\u00e3y \u0111\u1eb7t t\u00ean c\u1ed9t l\u00e0 "Keyword" ho\u1eb7c "T\u1eeb kh\u00f3a".', 'triangle-exclamation');
+                            return;
+                        }
+
+                        const newData = [];
+                        for(let r = headerRowIdx + 1; r < rows.length; r++) {
+                            const kw = rows[r][kwCol];
+                            if(!kw || String(kw).trim() === '') continue;
+                            const kwStr = String(kw).trim();
+                            const rawVol = volCol !== -1 ? rows[r][volCol] : 0;
+                            const vol = rawVol !== '' && rawVol != null ? parseInt(String(rawVol).replace(/[^0-9]/g, '')) || 0 : 0;
+                            newData.push({ keyword: kwStr, volume: vol, urls: null, cluster: null, isScraped: false, intent: null });
+                        }
+
+                        if(newData.length === 0) { this.showToast('Kh\u00f4ng t\u00ecm th\u1ea5y d\u1eef li\u1ec7u h\u1ee3p l\u1ec7!', 'triangle-exclamation'); return; }
+
+                        const kwLabel = headers[kwCol] || `C\u1ed9t ${kwCol+1}`;
+                        const volLabel = volCol !== -1 ? (headers[volCol] || `C\u1ed9t ${volCol+1}`) : '(kh\u00f4ng c\u00f3)';
                         this.mergeData(newData);
-                        this.showToast(`Đã nhập ${newData.length} từ khóa!`, 'check');
+                        this.showToast(`\u2713 Nh\u1eadp ${newData.length} t\u1eeb kh\u00f3a | Keyword: "${kwLabel}" \u2022 Volume: "${volLabel}"`, 'check');
                         e.target.value = ''; document.getElementById('modalImport').classList.remove('active');
-                    } catch(err) { this.showToast('Lỗi đọc file: ' + err.message, 'triangle-exclamation'); }
+                    } catch(err) { this.showToast('L\u1ed7i \u0111\u1ecdc file: ' + err.message, 'triangle-exclamation'); }
                 };
                 reader.readAsBinaryString(file);
             },
